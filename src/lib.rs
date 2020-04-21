@@ -3,7 +3,6 @@ extern crate objc;
 use objc::rc::StrongPtr;
 use objc::runtime::{Object, BOOL, YES};
 use objc::{class, msg_send, sel, sel_impl};
-use std::process::exit; // TODO: bubble errors up to main.rs
 
 #[link(name = "CoreBrightness", kind = "framework")]
 extern "C" {}
@@ -23,27 +22,36 @@ impl NightShift {
         NightShift { client }
     }
 
-    pub fn enable(&self, enabled: bool) {
-        let enabled = enabled as BOOL;
-        let result: BOOL = unsafe { msg_send![*self.client, setEnabled: enabled] };
-        if result != (true as BOOL) {
-            eprintln!("Failed to toggle Night Shift!");
-            exit(1);
+    pub fn enable(&self, enabled: bool) -> Result<(), String> {
+        let result: BOOL = unsafe { msg_send![*self.client, setEnabled: (enabled as BOOL)] };
+        if result == (true as BOOL) {
+            Ok(())
+        } else {
+            Err(format!("Failed to turn Night Shift {}", on_or_off(enabled)))
         }
     }
 
-    pub fn set_temp(&self, temp: &String) {
+    pub fn set_temp(&self, temp: &String) -> Result<(), String> {
         let temp = match temp.parse::<f32>() {
             Ok(v) => v / 100.0,
             Err(_) => {
-                eprintln!("Invalid temperature value! Please choose a number between 0 and 100.");
-                exit(1);
+                return Err("Color temperature must be a number from 0 to 100.".to_string());
             }
         };
         let result: BOOL = unsafe { msg_send![*self.client, setStrength:temp commit:YES] };
-        if result != (true as BOOL) {
-            eprintln!("Failed to set color balance!");
-            exit(1);
+
+        if result == (true as BOOL) {
+            Ok(())
+        } else {
+            Err("Failed to set color temperature".to_string())
         }
+    }
+}
+
+fn on_or_off(value: bool) -> String {
+    if value {
+        "on".to_string()
+    } else {
+        "off".to_string()
     }
 }
