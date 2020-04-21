@@ -13,7 +13,7 @@ fn print_usage(program: &String) {
     println!("Available Commands:");
     println!("  on                  Turns Night Shift on (until tomorrow/sunrise)");
     println!("  off                 Turns Night Shift off");
-    println!("  temp [0-100]        Set color temperature to value");
+    println!("  temp [0-100]        Set color temperature preference (does not affect on/off)");
 }
 
 fn main() {
