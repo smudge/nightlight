@@ -4,6 +4,7 @@ version = "0.0.1"
 authors = ["smudge <nathan@ngriffith.com>"]
 edition = "2018"
 license = "MIT"
+description = "A CLI for configuring 'Night Shift' on macOS"
 
 [dependencies]
 objc = "0.2"
