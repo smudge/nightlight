@@ -3,5 +3,7 @@ name = "nightshift"
 version = "0.0.1"
 authors = ["smudge <nathan@ngriffith.com>"]
 edition = "2018"
+license = "MIT"
 
 [dependencies]
+objc = "0.2"
