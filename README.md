@@ -78,6 +78,15 @@ fn main() {
 }
 ```
 
+## Todo:
+
+- [ ] Ability to see current status of Night Shift
+- [ ] Ability to enable/disable sunrise/sundown schedule
+- [ ] Ability to enable/disable custom schedules
+- [ ] API improvements and full documentation
+- [ ] Tests that use fake/stub ObjC library.
+- [ ] Cross-platform support (e.g. Windows' "Night Light")
+
 ## Contributing
 
 * Check the issue tracker and consider creating a new issue.
