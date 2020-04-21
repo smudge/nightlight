@@ -58,11 +58,9 @@ impl NightShift {
     pub fn enable(&self, enabled: bool) {
         let enabled = enabled as BOOL;
         let result: BOOL = unsafe { msg_send![*self.client, setEnabled: enabled] };
-        if result != enabled {
-            eprintln!(
-                "WARNING: Attempted to set enabled to '{}', but received '{}' in response",
-                enabled, result
-            );
+        if result != (true as BOOL) {
+            eprintln!("Failed to toggle Night Shift!");
+            exit(1);
         }
     }
 }
