@@ -1,0 +1,7 @@
+[package]
+name = "nightshift"
+version = "0.0.1"
+authors = ["smudge <nathan@ngriffith.com>"]
+edition = "2018"
+
+[dependencies]
