@@ -26,11 +26,12 @@ fn main() {
 
     let night_shift = NightShift::new();
     if args.len() == 2 && args[1] == "on" {
-        night_shift.enable(true).unwrap_or_else(|e| error(e));
+        night_shift.on().unwrap_or_else(|e| error(e));
     } else if args.len() == 2 && args[1] == "off" {
-        night_shift.enable(false).unwrap_or_else(|e| error(e));
+        night_shift.off().unwrap_or_else(|e| error(e));
     } else if args.len() == 3 && args[1] == "temp" {
-        night_shift.set_temp(&args[2]).unwrap_or_else(|e| error(e));
+        let temp = args[2].parse().unwrap_or(-1);
+        night_shift.set_temp(temp).unwrap_or_else(|e| error(e));
     } else {
         print_usage(&args[0]);
     }
@@ -38,5 +39,5 @@ fn main() {
 
 fn error(text: String) {
     eprintln!("{}", text);
-    exit(1);
+    exit(1)
 }
