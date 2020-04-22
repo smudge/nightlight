@@ -6,6 +6,7 @@ edition = "2018"
 categories = ["command-line-utilities", "os::macos-apis"]
 description = "A CLI for configuring 'Night Shift' on macOS 🌕🌖🌗🌘🌑"
 repository = "https://github.com/smudge/nightshift"
+readme = "README.md"
 license = "MIT"
 
 [dependencies]
