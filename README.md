@@ -58,7 +58,7 @@ nightshift temp 70
 In addition to a CLI, `nightshift` can be pulled-in as a dependency for other Rust crates:
 
 ```
-nightshift = "0.0.1"
+nightshift = "0.0.2"
 ```
 
 Here's an example `fn` that toggles Night Shift off,
@@ -72,9 +72,9 @@ use nightshift::NightShift;
 
 fn main() {
     let night_shift = NightShift::new();
-    night_shift.enable(false).unwrap();
-    night_shift.set_temp("70".to_string()).unwrap();
-    night_shift.enable(true).unwrap();
+    night_shift.off().unwrap();
+    night_shift.set_temp(70).unwrap();
+    night_shift.on().unwrap();
 }
 ```
 
