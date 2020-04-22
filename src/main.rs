@@ -11,8 +11,8 @@ fn print_usage(program: &String) {
     println!("{}\n", env!("CARGO_PKG_DESCRIPTION"));
     println!("Usage:\n  {} [command]\n", program);
     println!("Available Commands:");
-    println!("  on                  Turns Night Shift on (until tomorrow/sunrise)");
-    println!("  off                 Turns Night Shift off");
+    println!("  on                  Turn Night Shift on (until tomorrow/sunrise)");
+    println!("  off                 Turn Night Shift off");
     println!("  temp [0-100]        Set color temperature preference (does not affect on/off)");
 }
 
