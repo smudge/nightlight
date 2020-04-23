@@ -1,4 +1,4 @@
-use nightshift::{NightShift, Status};
+use nightshift::NightShift;
 use std::env::args;
 use std::process::exit;
 
@@ -16,7 +16,7 @@ fn print_usage(program: &String) {
     println!("  temp [0-100]        Set color temperature preference (does not affect on/off)");
 }
 
-fn print_status(status: Status) {
+fn print_status(status: nightshift::ffi::Status) {
     println!("active: {}", status.active());
     println!("enabled: {}", status.enabled());
     println!(
