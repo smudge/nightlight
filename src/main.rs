@@ -1,4 +1,4 @@
-use nightshift::NightShift;
+use nightshift::{NightShift, Status};
 use std::env::args;
 use std::process::exit;
 
@@ -16,6 +16,19 @@ fn print_usage(program: &String) {
     println!("  temp [0-100]        Set color temperature preference (does not affect on/off)");
 }
 
+fn print_status(status: Status) {
+    println!("active: {}", status.active());
+    println!("enabled: {}", status.enabled());
+    println!(
+        "sun_schedule_permitted: {}",
+        status.sun_schedule_permitted()
+    );
+    println!("mode: {}", status.mode());
+    println!("schedule: {} - {}", status.from_time(), status.to_time());
+    println!("disable_flags: {}", status.disable_flags());
+    println!("available: {}", status.available());
+}
+
 fn main() {
     let args: Vec<String> = args().collect();
 
@@ -29,6 +42,11 @@ fn main() {
         night_shift.on().unwrap_or_else(|e| error(e));
     } else if args.len() == 2 && args[1] == "off" {
         night_shift.off().unwrap_or_else(|e| error(e));
+    } else if args.len() == 2 && args[1] == "status" {
+        match night_shift.status() {
+            Ok(s) => print_status(s),
+            Err(e) => error(e),
+        }
     } else if args.len() == 3 && args[1] == "temp" {
         let temp = args[2].parse().unwrap_or(-1);
         night_shift.set_temp(temp).unwrap_or_else(|e| error(e));
