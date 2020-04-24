@@ -6,6 +6,12 @@ pub struct NightShift {
     client: ffi::Client,
 }
 
+pub struct Status {
+    pub scheduled: bool,
+    pub currently_active: bool,
+    pub color_temperature: i32,
+}
+
 impl NightShift {
     pub fn new() -> NightShift {
         NightShift {
@@ -33,11 +39,12 @@ impl NightShift {
         self.client.set_strength(temp as f32 / 100.0)
     }
 
-    pub fn is_on(&self) -> Result<bool, String> {
-        Ok(self.client.status()?.active())
-    }
-
-    pub fn is_enabled(&self) -> Result<bool, String> {
-        Ok(self.client.status()?.enabled())
+    pub fn status(&self) -> Result<Status, String> {
+        let status = self.client.status()?;
+        Ok(Status {
+            scheduled: status.enabled(),
+            currently_active: status.active(),
+            color_temperature: self.client.get_strength()?,
+        })
     }
 }

@@ -71,6 +71,17 @@ impl Client {
         }
     }
 
+    pub fn get_strength(&self) -> Result<i32, String> {
+        let mut value: f32 = -1.0;
+        let result: BOOL = unsafe { msg_send![*self.inner, getStrength: &mut value] };
+
+        if result == (true as BOOL) && value >= 0.0 {
+            Ok((value * 100.0) as i32)
+        } else {
+            Err("Failed to get color temperature".to_string())
+        }
+    }
+
     pub fn status(&self) -> Result<Status, String> {
         let mut status = InnerStatus::default();
         let result: BOOL = unsafe { msg_send![*self.inner, getBlueLightStatus: &mut status] };

@@ -1,4 +1,4 @@
-use nightshift::NightShift;
+use nightshift::{NightShift, Status};
 use std::env::args;
 use std::process::exit;
 
@@ -16,8 +16,10 @@ fn print_usage(program: &String) {
     println!("  temp [0-100]        Set color temperature preference (does not affect on/off)");
 }
 
-fn print_status(is_on: bool) {
-    println!("active: {}", is_on);
+fn print_status(status: Status) {
+    println!("scheduled?             {}", status.scheduled);
+    println!("currently active?      {}", status.currently_active);
+    println!("color temperature:     {}", status.color_temperature);
 }
 
 fn main() {
@@ -34,8 +36,8 @@ fn main() {
     } else if args.len() == 2 && args[1] == "off" {
         night_shift.off().unwrap_or_else(|e| error(e));
     } else if args.len() == 2 && args[1] == "status" {
-        match night_shift.is_on() {
-            Ok(on) => print_status(on),
+        match night_shift.status() {
+            Ok(status) => print_status(status),
             Err(e) => error(e),
         }
     } else if args.len() == 3 && args[1] == "temp" {
