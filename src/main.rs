@@ -14,6 +14,7 @@ fn print_usage(program: &String) {
     println!("  on                  Turn Night Shift on (until tomorrow/sunrise)");
     println!("  off                 Turn Night Shift off");
     println!("  temp [0-100]        Set color temperature preference (does not affect on/off)");
+    println!("  status              View current status and configuration");
 }
 
 fn print_status(status: Status) {
