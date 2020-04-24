@@ -1,4 +1,4 @@
-use nightshift::{NightShift, Status};
+use nightshift::{NightShift, Schedule, Status};
 use std::env::args;
 use std::process::exit;
 
@@ -17,9 +17,17 @@ fn print_usage(program: &String) {
 }
 
 fn print_status(status: Status) {
-    println!("scheduled?             {}", status.scheduled);
-    println!("currently active?      {}", status.currently_active);
-    println!("color temperature:     {}", status.color_temperature);
+    println!("Schedule:\n=> {}", status.schedule_type);
+    let off_at = match status.schedule_type {
+        Schedule::SunsetToSunrise => "Sunrise",
+        Schedule::Off => "Tomorrow",
+        Schedule::Custom => {
+            println!("From:\n=> {} to {}", status.from_time, status.to_time);
+            "Tomorrow"
+        }
+    };
+    println!("On Until {}:\n=> {}", off_at, status.currently_active);
+    println!("Color Temperature:\n=> {}", status.color_temperature);
 }
 
 fn main() {
