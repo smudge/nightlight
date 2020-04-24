@@ -16,17 +16,8 @@ fn print_usage(program: &String) {
     println!("  temp [0-100]        Set color temperature preference (does not affect on/off)");
 }
 
-fn print_status(status: nightshift::ffi::Status) {
-    println!("active: {}", status.active());
-    println!("enabled: {}", status.enabled());
-    println!(
-        "sun_schedule_permitted: {}",
-        status.sun_schedule_permitted()
-    );
-    println!("mode: {}", status.mode());
-    println!("schedule: {} - {}", status.from_time(), status.to_time());
-    println!("disable_flags: {}", status.disable_flags());
-    println!("available: {}", status.available());
+fn print_status(is_on: bool) {
+    println!("active: {}", is_on);
 }
 
 fn main() {
@@ -43,8 +34,8 @@ fn main() {
     } else if args.len() == 2 && args[1] == "off" {
         night_shift.off().unwrap_or_else(|e| error(e));
     } else if args.len() == 2 && args[1] == "status" {
-        match night_shift.status() {
-            Ok(s) => print_status(s),
+        match night_shift.is_on() {
+            Ok(on) => print_status(on),
             Err(e) => error(e),
         }
     } else if args.len() == 3 && args[1] == "temp" {
