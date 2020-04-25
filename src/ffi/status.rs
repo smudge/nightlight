@@ -1,4 +1,4 @@
-use objc::runtime::BOOL;
+use objc::runtime::{BOOL, YES};
 use std::os::raw::c_int;
 
 #[derive(Default)]
@@ -42,15 +42,15 @@ impl BlueLightStatus {
     }
 
     pub fn active(&self) -> bool {
-        self.inner.active == (true as BOOL)
+        self.inner.active == YES
     }
 
     pub fn enabled(&self) -> bool {
-        self.inner.enabled == (true as BOOL)
+        self.inner.enabled == YES
     }
 
     pub fn sun_schedule_permitted(&self) -> bool {
-        self.inner.sun_schedule_permitted == (true as BOOL)
+        self.inner.sun_schedule_permitted == YES
     }
 
     pub fn mode(&self) -> i32 {
@@ -62,7 +62,7 @@ impl BlueLightStatus {
     }
 
     pub fn available(&self) -> bool {
-        self.inner.available == (true as BOOL)
+        self.inner.available == YES
     }
 
     pub fn from_time(&self) -> String {

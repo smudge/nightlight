@@ -20,7 +20,7 @@ impl CBBlueLightClient {
 
     pub fn set_enabled(&self, enabled: bool) -> Result<(), String> {
         let result: BOOL = unsafe { msg_send![*self.inner, setEnabled: (enabled as BOOL)] };
-        if result == (true as BOOL) {
+        if result == YES {
             Ok(())
         } else {
             Err(format!("Failed to turn Night Shift {}", on_or_off(enabled)))
@@ -30,7 +30,7 @@ impl CBBlueLightClient {
     pub fn set_strength(&self, strength: f32) -> Result<(), String> {
         let result: BOOL = unsafe { msg_send![*self.inner, setStrength:strength commit:YES] };
 
-        if result == (true as BOOL) {
+        if result == YES {
             Ok(())
         } else {
             Err("Failed to set color temperature".to_string())
@@ -41,7 +41,7 @@ impl CBBlueLightClient {
         let mut value: f32 = -1.0;
         let result: BOOL = unsafe { msg_send![*self.inner, getStrength: &mut value] };
 
-        if result == (true as BOOL) && value >= 0.0 {
+        if result == YES && value >= 0.0 {
             Ok((value * 100.0) as i32)
         } else {
             Err("Failed to get color temperature".to_string())
@@ -51,7 +51,7 @@ impl CBBlueLightClient {
     pub fn status(&self) -> Result<BlueLightStatus, String> {
         let mut ptr = BlueLightStatus::c_ptr();
         let result: BOOL = unsafe { msg_send![*self.inner, getBlueLightStatus: &mut ptr] };
-        if result == (true as BOOL) {
+        if result == YES {
             Ok(BlueLightStatus::new(ptr))
         } else {
             Err("Failed to get status".to_string())
