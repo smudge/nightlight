@@ -1,6 +1,8 @@
 use objc::runtime::{BOOL, YES};
 use std::os::raw::c_int;
 
+mod padding;
+
 #[derive(Default)]
 #[repr(C)]
 struct Time {
@@ -25,6 +27,7 @@ pub struct InnerStatus {
     schedule: Schedule,
     _disable_flags: u64,
     _available: BOOL,
+    padding: padding::Padding,
 }
 
 #[derive(Default)]
@@ -38,6 +41,13 @@ impl BlueLightStatus {
     }
 
     pub fn new(inner: InnerStatus) -> BlueLightStatus {
+        if !inner.padding.is_empty() {
+            eprintln!(
+                "======== \
+                \nWarning: Your version of macOS may be new, resulting in unexpected behavior. \
+                \n========"
+            )
+        }
         BlueLightStatus { inner }
     }
 
