@@ -18,13 +18,13 @@ struct Schedule {
 #[derive(Default)]
 #[repr(C)]
 pub struct InnerStatus {
-    active: BOOL,
+    _active: BOOL,
     enabled: BOOL,
-    sun_schedule_permitted: BOOL,
+    _sun_schedule_permitted: BOOL,
     mode: c_int,
     schedule: Schedule,
-    disable_flags: u64,
-    available: BOOL,
+    _disable_flags: u64,
+    _available: BOOL,
 }
 
 #[derive(Default)]
@@ -41,28 +41,12 @@ impl BlueLightStatus {
         BlueLightStatus { inner }
     }
 
-    pub fn active(&self) -> bool {
-        self.inner.active == YES
-    }
-
     pub fn enabled(&self) -> bool {
         self.inner.enabled == YES
     }
 
-    pub fn sun_schedule_permitted(&self) -> bool {
-        self.inner.sun_schedule_permitted == YES
-    }
-
     pub fn mode(&self) -> i32 {
         self.inner.mode as i32
-    }
-
-    pub fn disable_flags(&self) -> u64 {
-        self.inner.disable_flags
-    }
-
-    pub fn available(&self) -> bool {
-        self.inner.available == YES
     }
 
     pub fn from_time(&self) -> String {
