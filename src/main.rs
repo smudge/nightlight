@@ -26,7 +26,11 @@ fn print_status(status: Status) {
         Schedule::SunsetToSunrise => "Sunrise",
         Schedule::Off => "Tomorrow",
         Schedule::Custom(from_time, to_time) => {
-            println!("From:\n=> {} to {}", from_time.display, to_time.display);
+            println!(
+                "From:\n=> {} to {}",
+                from_time.to_string(),
+                to_time.to_string()
+            );
             "Tomorrow"
         }
     };
@@ -47,6 +51,14 @@ fn main() {
         night_shift.on().unwrap_or_else(|e| error(e));
     } else if args.len() == 2 && args[1] == "off" {
         night_shift.off().unwrap_or_else(|e| error(e));
+    } else if args.len() == 2 && args[1] == "schedule" {
+        night_shift
+            .set_schedule(Schedule::SunsetToSunrise)
+            .unwrap_or_else(|e| error(e));
+    } else if args.len() == 2 && args[1] == "unschedule" {
+        night_shift
+            .set_schedule(Schedule::Off)
+            .unwrap_or_else(|e| error(e));
     } else if args.len() == 2 && args[1] == "status" {
         match night_shift.status() {
             Ok(status) => print_status(status),

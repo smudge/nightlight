@@ -2,6 +2,7 @@ use crate::ffi::BlueLightStatus;
 use objc::rc::StrongPtr;
 use objc::runtime::{Object, BOOL, YES};
 use objc::{class, msg_send, sel, sel_impl};
+use std::os::raw::c_int;
 
 pub struct CBBlueLightClient {
     inner: StrongPtr,
@@ -24,6 +25,28 @@ impl CBBlueLightClient {
             Ok(())
         } else {
             Err(format!("Failed to turn Night Shift {}", on_or_off(enabled)))
+        }
+    }
+
+    pub fn set_mode(&self, mode: u8) -> Result<(), String> {
+        let result: BOOL = unsafe { msg_send![*self.inner, setMode: mode as c_int] };
+
+        if result == YES {
+            Ok(())
+        } else {
+            Err("Failed to set schedule".to_string())
+        }
+    }
+
+    pub fn set_schedule(&self, _from: (u8, u8), _to: (u8, u8)) -> Result<(), String> {
+        self.set_mode(1)?;
+
+        let result = YES; // TODO: Call setSchedule
+
+        if result == YES {
+            Ok(())
+        } else {
+            Err("Failed to set schedule".to_string())
         }
     }
 

@@ -15,7 +15,25 @@ pub struct Status {
 }
 
 pub struct Time {
-    pub display: String,
+    hour: u8,
+    min: u8,
+}
+
+impl Time {
+    pub fn from_tuple(tuple: (u8, u8)) -> Time {
+        Time {
+            hour: tuple.0,
+            min: tuple.1,
+        }
+    }
+
+    pub fn tuple(&self) -> (u8, u8) {
+        (self.hour, self.min)
+    }
+
+    pub fn to_string(&self) -> String {
+        format!("{}:{}", self.hour, self.min)
+    }
 }
 
 pub enum Schedule {
@@ -53,6 +71,14 @@ impl NightShift {
         self.client.set_enabled(on)
     }
 
+    pub fn set_schedule(&self, schedule: Schedule) -> Result<(), String> {
+        match schedule {
+            Schedule::Off => self.client.set_mode(0),
+            Schedule::SunsetToSunrise => self.client.set_mode(1),
+            Schedule::Custom(from, to) => self.client.set_schedule(from.tuple(), to.tuple()),
+        }
+    }
+
     pub fn set_temp(&self, temp: i32) -> Result<(), String> {
         if temp < 0 || temp > 100 {
             return Err("Color temperature must be a number from 0 to 100.".to_string());
@@ -71,13 +97,13 @@ impl NightShift {
         })
     }
 
-    fn schedule(mode: i32, from_time: String, to_time: String) -> Result<Schedule, String> {
-        let from_time = Time { display: from_time };
-        let to_time = Time { display: to_time };
+    fn schedule(mode: i32, from: (u8, u8), to: (u8, u8)) -> Result<Schedule, String> {
+        let from = Time::from_tuple(from);
+        let to = Time::from_tuple(to);
 
         match mode {
             0 => Ok(Schedule::Off),
-            2 => Ok(Schedule::Custom(from_time, to_time)),
+            2 => Ok(Schedule::Custom(from, to)),
             1 => Ok(Schedule::SunsetToSunrise),
             _ => Err("Unrecognized schedule type".to_string()),
         }
