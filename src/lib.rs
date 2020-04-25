@@ -5,7 +5,7 @@ mod ffi;
 use std::fmt;
 
 pub struct NightShift {
-    client: ffi::Client,
+    client: ffi::CBBlueLightClient,
 }
 
 pub struct Status {
@@ -35,7 +35,7 @@ impl fmt::Display for Schedule {
 impl NightShift {
     pub fn new() -> NightShift {
         NightShift {
-            client: ffi::Client::new(),
+            client: ffi::CBBlueLightClient::new(),
         }
     }
 
