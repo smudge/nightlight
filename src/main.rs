@@ -18,12 +18,12 @@ fn print_usage(program: &String) {
 }
 
 fn print_status(status: Status) {
-    println!("Schedule:\n=> {}", status.schedule_type);
-    let off_at = match status.schedule_type {
+    println!("Schedule:\n=> {}", status.schedule);
+    let off_at = match status.schedule {
         Schedule::SunsetToSunrise => "Sunrise",
         Schedule::Off => "Tomorrow",
-        Schedule::Custom => {
-            println!("From:\n=> {} to {}", status.from_time, status.to_time);
+        Schedule::Custom(from_time, to_time) => {
+            println!("From:\n=> {} to {}", from_time.display, to_time.display);
             "Tomorrow"
         }
     };

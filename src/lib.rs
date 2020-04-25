@@ -10,23 +10,25 @@ pub struct NightShift {
 
 pub struct Status {
     pub currently_active: bool,
-    pub schedule_type: Schedule,
+    pub schedule: Schedule,
     pub color_temperature: i32,
-    pub from_time: String,
-    pub to_time: String,
+}
+
+pub struct Time {
+    pub display: String,
 }
 
 pub enum Schedule {
-    Off = 0,
-    Custom = 2,
-    SunsetToSunrise = 1,
+    Off,
+    Custom(Time, Time),
+    SunsetToSunrise,
 }
 
 impl fmt::Display for Schedule {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Schedule::Off => write!(f, "off"),
-            Schedule::Custom => write!(f, "custom"),
+            Schedule::Custom(_, _) => write!(f, "custom"),
             Schedule::SunsetToSunrise => write!(f, "sunset to sunrise"),
         }
     }
@@ -61,19 +63,21 @@ impl NightShift {
 
     pub fn status(&self) -> Result<Status, String> {
         let status = self.client.status()?;
+        let schedule = NightShift::schedule(status.mode(), status.from_time(), status.to_time())?;
         Ok(Status {
             currently_active: status.enabled(),
-            schedule_type: NightShift::schedule_type(status.mode())?,
+            schedule,
             color_temperature: self.client.get_strength()?,
-            from_time: status.from_time(),
-            to_time: status.to_time(),
         })
     }
 
-    pub fn schedule_type(mode: i32) -> Result<Schedule, String> {
+    fn schedule(mode: i32, from_time: String, to_time: String) -> Result<Schedule, String> {
+        let from_time = Time { display: from_time };
+        let to_time = Time { display: to_time };
+
         match mode {
             0 => Ok(Schedule::Off),
-            2 => Ok(Schedule::Custom),
+            2 => Ok(Schedule::Custom(from_time, to_time)),
             1 => Ok(Schedule::SunsetToSunrise),
             _ => Err("Unrecognized schedule type".to_string()),
         }
