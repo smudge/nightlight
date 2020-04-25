@@ -15,7 +15,7 @@ dependencies = [
 
 [[package]]
 name = "nightshift"
-version = "0.0.2"
+version = "0.0.3"
 dependencies = [
  "objc 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)",
 ]

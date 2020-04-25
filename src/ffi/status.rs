@@ -1,6 +1,8 @@
 use objc::runtime::{BOOL, YES};
 use std::os::raw::c_int;
 
+mod padding;
+
 #[derive(Default)]
 #[repr(C)]
 struct Time {
@@ -18,13 +20,14 @@ struct Schedule {
 #[derive(Default)]
 #[repr(C)]
 pub struct InnerStatus {
-    active: BOOL,
+    _active: BOOL,
     enabled: BOOL,
-    sun_schedule_permitted: BOOL,
+    _sun_schedule_permitted: BOOL,
     mode: c_int,
     schedule: Schedule,
-    disable_flags: u64,
-    available: BOOL,
+    _disable_flags: u64,
+    _available: BOOL,
+    padding: padding::Padding,
 }
 
 #[derive(Default)]
@@ -38,31 +41,22 @@ impl BlueLightStatus {
     }
 
     pub fn new(inner: InnerStatus) -> BlueLightStatus {
+        if !inner.padding.is_empty() {
+            eprintln!(
+                "======== \
+                \nWarning: Your version of macOS may be new, resulting in unexpected behavior. \
+                \n========"
+            )
+        }
         BlueLightStatus { inner }
-    }
-
-    pub fn active(&self) -> bool {
-        self.inner.active == YES
     }
 
     pub fn enabled(&self) -> bool {
         self.inner.enabled == YES
     }
 
-    pub fn sun_schedule_permitted(&self) -> bool {
-        self.inner.sun_schedule_permitted == YES
-    }
-
     pub fn mode(&self) -> i32 {
         self.inner.mode as i32
-    }
-
-    pub fn disable_flags(&self) -> u64 {
-        self.inner.disable_flags
-    }
-
-    pub fn available(&self) -> bool {
-        self.inner.available == YES
     }
 
     pub fn from_time(&self) -> String {
