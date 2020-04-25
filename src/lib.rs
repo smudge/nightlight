@@ -1,25 +1,42 @@
 extern crate objc;
 
-use objc::rc::StrongPtr;
-use objc::runtime::{Object, BOOL, YES};
-use objc::{class, msg_send, sel, sel_impl};
+mod ffi;
 
-#[link(name = "CoreBrightness", kind = "framework")]
-extern "C" {}
+use std::fmt;
 
 pub struct NightShift {
-    client: StrongPtr,
+    client: ffi::CBBlueLightClient,
+}
+
+pub struct Status {
+    pub currently_active: bool,
+    pub schedule_type: Schedule,
+    pub color_temperature: i32,
+    pub from_time: String,
+    pub to_time: String,
+}
+
+pub enum Schedule {
+    Off = 0,
+    Custom = 2,
+    SunsetToSunrise = 1,
+}
+
+impl fmt::Display for Schedule {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Schedule::Off => write!(f, "off"),
+            Schedule::Custom => write!(f, "custom"),
+            Schedule::SunsetToSunrise => write!(f, "sunset to sunrise"),
+        }
+    }
 }
 
 impl NightShift {
     pub fn new() -> NightShift {
-        let client_class = class!(CBBlueLightClient);
-        let client = unsafe {
-            let obj: *mut Object = msg_send![client_class, alloc];
-            let obj: *mut Object = msg_send![obj, init];
-            StrongPtr::new(obj)
-        };
-        NightShift { client }
+        NightShift {
+            client: ffi::CBBlueLightClient::new(),
+        }
     }
 
     pub fn on(&self) -> Result<(), String> {
@@ -31,12 +48,7 @@ impl NightShift {
     }
 
     pub fn toggle(&self, on: bool) -> Result<(), String> {
-        let result: BOOL = unsafe { msg_send![*self.client, setEnabled: (on as BOOL)] };
-        if result == (true as BOOL) {
-            Ok(())
-        } else {
-            Err(format!("Failed to turn Night Shift {}", on_or_off(on)))
-        }
+        self.client.set_enabled(on)
     }
 
     pub fn set_temp(&self, temp: i32) -> Result<(), String> {
@@ -44,21 +56,26 @@ impl NightShift {
             return Err("Color temperature must be a number from 0 to 100.".to_string());
         }
 
-        let strength = temp as f32 / 100.0;
-        let result: BOOL = unsafe { msg_send![*self.client, setStrength:strength commit:YES] };
-
-        if result == (true as BOOL) {
-            Ok(())
-        } else {
-            Err("Failed to set color temperature".to_string())
-        }
+        self.client.set_strength(temp as f32 / 100.0)
     }
-}
 
-fn on_or_off(value: bool) -> String {
-    if value {
-        "on".to_string()
-    } else {
-        "off".to_string()
+    pub fn status(&self) -> Result<Status, String> {
+        let status = self.client.status()?;
+        Ok(Status {
+            currently_active: status.enabled(),
+            schedule_type: NightShift::schedule_type(status.mode())?,
+            color_temperature: self.client.get_strength()?,
+            from_time: status.from_time(),
+            to_time: status.to_time(),
+        })
+    }
+
+    pub fn schedule_type(mode: i32) -> Result<Schedule, String> {
+        match mode {
+            0 => Ok(Schedule::Off),
+            2 => Ok(Schedule::Custom),
+            1 => Ok(Schedule::SunsetToSunrise),
+            _ => Err("Unrecognized schedule type".to_string()),
+        }
     }
 }

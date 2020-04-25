@@ -1,4 +1,4 @@
-use nightshift::NightShift;
+use nightshift::{NightShift, Schedule, Status};
 use std::env::args;
 use std::process::exit;
 
@@ -14,6 +14,21 @@ fn print_usage(program: &String) {
     println!("  on                  Turn Night Shift on (until tomorrow/sunrise)");
     println!("  off                 Turn Night Shift off");
     println!("  temp [0-100]        Set color temperature preference (does not affect on/off)");
+    println!("  status              View current status and configuration");
+}
+
+fn print_status(status: Status) {
+    println!("Schedule:\n=> {}", status.schedule_type);
+    let off_at = match status.schedule_type {
+        Schedule::SunsetToSunrise => "Sunrise",
+        Schedule::Off => "Tomorrow",
+        Schedule::Custom => {
+            println!("From:\n=> {} to {}", status.from_time, status.to_time);
+            "Tomorrow"
+        }
+    };
+    println!("On Until {}:\n=> {}", off_at, status.currently_active);
+    println!("Color Temperature:\n=> {}", status.color_temperature);
 }
 
 fn main() {
@@ -29,6 +44,11 @@ fn main() {
         night_shift.on().unwrap_or_else(|e| error(e));
     } else if args.len() == 2 && args[1] == "off" {
         night_shift.off().unwrap_or_else(|e| error(e));
+    } else if args.len() == 2 && args[1] == "status" {
+        match night_shift.status() {
+            Ok(status) => print_status(status),
+            Err(e) => error(e),
+        }
     } else if args.len() == 3 && args[1] == "temp" {
         let temp = args[2].parse().unwrap_or(-1);
         night_shift.set_temp(temp).unwrap_or_else(|e| error(e));
