@@ -11,3 +11,4 @@ license = "MIT"
 
 [dependencies]
 objc = "0.2"
+time = "0.2.10"

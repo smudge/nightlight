@@ -38,10 +38,9 @@ impl CBBlueLightClient {
         }
     }
 
-    pub fn set_schedule(&self, _from: (u8, u8), _to: (u8, u8)) -> Result<(), String> {
-        self.set_mode(1)?;
-
-        let result = YES; // TODO: Call setSchedule
+    pub fn set_schedule(&self, from: (u8, u8), to: (u8, u8)) -> Result<(), String> {
+        let ptr = BlueLightStatus::sched_ptr(from, to);
+        let result: BOOL = unsafe { msg_send![*self.inner, setSchedule: &ptr] };
 
         if result == YES {
             Ok(())

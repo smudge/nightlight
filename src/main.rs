@@ -1,4 +1,4 @@
-use nightshift::{NightShift, Schedule, Status};
+use nightshift::{NightShift, Schedule, Status, Time};
 use std::env::args;
 use std::process::exit;
 
@@ -55,6 +55,8 @@ fn main() {
         night_shift
             .set_schedule(Schedule::SunsetToSunrise)
             .unwrap_or_else(|e| error(e));
+    } else if args.len() == 4 && args[1] == "schedule" {
+        schedule(night_shift, &args[2], &args[3]).unwrap_or_else(|e| error(e));
     } else if args.len() == 2 && args[1] == "unschedule" {
         night_shift
             .set_schedule(Schedule::Off)
@@ -70,6 +72,13 @@ fn main() {
     } else {
         print_usage(&args[0]);
     }
+}
+
+fn schedule(night_shift: NightShift, from: &String, to: &String) -> Result<(), String> {
+    let from = Time::parse(from)?;
+    let to = Time::parse(to)?;
+
+    night_shift.set_schedule(Schedule::Custom(from, to))
 }
 
 fn error(text: String) {

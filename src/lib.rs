@@ -1,4 +1,5 @@
 extern crate objc;
+extern crate time;
 
 mod ffi;
 
@@ -20,6 +21,28 @@ pub struct Time {
 }
 
 impl Time {
+    pub fn parse(value: &String) -> Result<Time, String> {
+        let mut time = time::Time::parse(value, "%-H:%M");
+        if time.is_err() {
+            time = time::Time::parse(value, "%-H");
+        }
+        if time.is_err() {
+            time = time::Time::parse(value.to_uppercase(), "%-I:%M%P");
+        }
+        if time.is_err() {
+            time = time::Time::parse(value.to_uppercase(), "%-I:%M%P");
+        }
+        // TODO: Look at system locale and decide if am/pm can be inferred.
+
+        match time {
+            Ok(time) => Ok(Time {
+                hour: time.hour(),
+                min: time.minute(),
+            }),
+            Err(_) => Err(format!("Invalid string value '{}'", value)),
+        }
+    }
+
     pub fn from_tuple(tuple: (u8, u8)) -> Time {
         Time {
             hour: tuple.0,
@@ -75,7 +98,10 @@ impl NightShift {
         match schedule {
             Schedule::Off => self.client.set_mode(0),
             Schedule::SunsetToSunrise => self.client.set_mode(1),
-            Schedule::Custom(from, to) => self.client.set_schedule(from.tuple(), to.tuple()),
+            Schedule::Custom(from, to) => {
+                self.client.set_mode(2)?;
+                self.client.set_schedule(from.tuple(), to.tuple())
+            }
         }
     }
 
