@@ -9,15 +9,15 @@ pub struct Time {
 
 impl Time {
     pub fn parse(value: &String) -> Result<Time, String> {
-        let mut time = time::Time::parse(value, "%-H:%M");
+        let mut time = time::Time::parse(value.to_uppercase(), "%-I:%M%P");
+        if time.is_err() {
+            time = time::Time::parse(value.to_uppercase(), "%-I%P");
+        }
+        if time.is_err() {
+            time = time::Time::parse(value, "%-H:%M");
+        }
         if time.is_err() {
             time = time::Time::parse(value, "%-H");
-        }
-        if time.is_err() {
-            time = time::Time::parse(value.to_uppercase(), "%-I:%M%P");
-        }
-        if time.is_err() {
-            time = time::Time::parse(value.to_uppercase(), "%-I:%M%P");
         }
         // TODO: Look at system locale and decide if am/pm can be inferred.
 
