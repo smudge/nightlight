@@ -1,6 +1,6 @@
 [package]
 name = "nightshift"
-version = "0.0.5"
+version = "0.0.5-pre"
 authors = ["smudge <nathan@ngriffith.com>"]
 edition = "2018"
 description = "<renamed to nightlight>"

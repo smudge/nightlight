@@ -62,7 +62,7 @@ dependencies = [
 
 [[package]]
 name = "nightshift"
-version = "0.0.5"
+version = "0.0.5-pre"
 dependencies = [
  "nightlight 0.0.5 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
