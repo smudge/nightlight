@@ -94,7 +94,7 @@ and then toggles the feature back on:
 ```rust
 extern crate nightshift;
 
-use nightshift::NightShift;
+use nightshift::{NightShift, Schedule};
 
 fn main() {
     let night_shift = NightShift::new();
@@ -105,7 +105,7 @@ fn main() {
     }
 
     println!("Setting schedule and temperature...");
-    night_shift.set_schedule(Schedule::SunsetToSunrise);
+    night_shift.set_schedule(Schedule::SunsetToSunrise).unwrap();
     night_shift.set_temp(70).unwrap();
 
     println!("Turning Night Shift on...");
