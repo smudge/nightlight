@@ -6,10 +6,11 @@ This crate also doubles as a Rust library. 🦀
 
 ### Why?
 
-The "Night Shift" feature on macOS is a convenient, first party alternative
-to the more feature-rich [f.lux®](https://justgetflux.com/). However, as
+The "Night Shift" feature on macOS is a convenient, built-in feature
+that can theoretically accomplish most of what third-party alternatives
+(like [f.lux®](https://justgetflux.com/)) are capable of. However, as
 of now, there is no way to programmatically configure Night Shift (without
-entering the system preferences GUI).
+entering the system preferences GUI), making its current usage more limited.
 
 This `nightshift` CLI aims to enable such access via a few simple commands.
 (Or, alternatively, via library access for other Rust tools.)
@@ -53,37 +54,73 @@ Set color temperature (a number from 0 to 100):
 nightshift temp 70
 ```
 
+Schedule from sunset to sunrise:
+
+```
+nightshift schedule
+```
+
+Set a custom schedule (in 12 or 24-hour time format):
+
+```
+nightshift schedule 19:45 6:00
+nightshift schedule 7:45pm 6am
+```
+
+Disable the current schedule:
+
+```
+nightshift unschedule
+```
+
+View current schedule, on/off state, and color temperature preference:
+
+```
+nightshift status
+```
+
 ### Rust API
 
 In addition to a CLI, `nightshift` can be pulled-in as a dependency for other Rust crates:
 
 ```
-nightshift = "0.0.3"
+nightshift = "0.0.4"
 ```
 
 Here's an example `fn` that toggles Night Shift off,
-changes the color temperature preference, and then
-toggles the feature back on:
+changes the schedule and color temperature preference,
+and then toggles the feature back on:
 
 ```rust
 extern crate nightshift;
 
-use nightshift::NightShift;
+use nightshift::{NightShift, Schedule};
 
 fn main() {
     let night_shift = NightShift::new();
-    night_shift.off().unwrap();
+
+    if night_shift.status().unwrap().currently_active {
+        println!("Turning Night Shift off...");
+        night_shift.off().unwrap();
+    }
+
+    println!("Setting schedule and temperature...");
+    night_shift.set_schedule(Schedule::SunsetToSunrise).unwrap();
     night_shift.set_temp(70).unwrap();
+
+    println!("Turning Night Shift on...");
     night_shift.on().unwrap();
 }
 ```
 
 ## Todo:
 
-- [ ] Ability to see current status of Night Shift
-- [ ] Ability to enable/disable sunrise/sundown schedule
-- [ ] Ability to enable/disable custom schedules
+- [X] Ability to see current status of Night Shift
+- [X] Ability to enable/disable sunrise/sundown schedule
+- [X] Ability to enable/disable custom schedules
+- [ ] Ensure that changing schedule doesn't affect on/off state.
 - [ ] API improvements and full documentation
+- [ ] Test coverage of schedule/time parsing.
 - [ ] Tests that use fake/stub ObjC library.
 - [ ] Cross-platform support (e.g. Windows' "Night Light")
 

@@ -5,14 +5,14 @@ mod padding;
 
 #[derive(Default)]
 #[repr(C)]
-struct Time {
+pub struct Time {
     hour: c_int,
     minute: c_int,
 }
 
 #[derive(Default)]
 #[repr(C)]
-struct Schedule {
+pub struct Schedule {
     from_time: Time,
     to_time: Time,
 }
@@ -40,6 +40,19 @@ impl BlueLightStatus {
         InnerStatus::default()
     }
 
+    pub fn sched_ptr(from: (u8, u8), to: (u8, u8)) -> Schedule {
+        Schedule {
+            from_time: Time {
+                hour: from.0 as i32,
+                minute: from.1 as i32,
+            },
+            to_time: Time {
+                hour: to.0 as i32,
+                minute: to.1 as i32,
+            },
+        }
+    }
+
     pub fn new(inner: InnerStatus) -> BlueLightStatus {
         if !inner.padding.is_empty() {
             eprintln!(
@@ -59,17 +72,17 @@ impl BlueLightStatus {
         self.inner.mode as i32
     }
 
-    pub fn from_time(&self) -> String {
-        format!(
-            "{}:{}",
-            self.inner.schedule.from_time.hour, self.inner.schedule.from_time.minute
+    pub fn from_time(&self) -> (u8, u8) {
+        (
+            self.inner.schedule.from_time.hour as u8,
+            self.inner.schedule.from_time.minute as u8,
         )
     }
 
-    pub fn to_time(&self) -> String {
-        format!(
-            "{}:{}",
-            self.inner.schedule.to_time.hour, self.inner.schedule.to_time.minute
+    pub fn to_time(&self) -> (u8, u8) {
+        (
+            self.inner.schedule.to_time.hour as u8,
+            self.inner.schedule.to_time.minute as u8,
         )
     }
 }
