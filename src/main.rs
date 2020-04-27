@@ -1,4 +1,4 @@
-use nightlight::{NightShift, Schedule, Status, Time};
+use nightlight::{NightLight, Schedule, Status, Time};
 use std::env::args;
 use std::process::exit;
 
@@ -46,7 +46,7 @@ fn main() {
         exit(1);
     }
 
-    let night_shift = NightShift::new();
+    let night_shift = NightLight::new();
     if args.len() == 2 && args[1] == "on" {
         night_shift.on().unwrap_or_else(|e| error(e));
     } else if args.len() == 2 && args[1] == "off" {
@@ -74,7 +74,7 @@ fn main() {
     }
 }
 
-fn schedule(night_shift: NightShift, from: &String, to: &String) -> Result<(), String> {
+fn schedule(night_shift: NightLight, from: &String, to: &String) -> Result<(), String> {
     let from = Time::parse(from)?;
     let to = Time::parse(to)?;
 

@@ -94,7 +94,7 @@ and then toggles the feature back on:
 ```rust
 extern crate nightlight;
 
-use nightlight::{NightShift, Schedule};
+use nightlight::{NightLight, Schedule};
 
 fn main() {
     let night_shift = nightlight::new();
