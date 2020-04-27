@@ -38,7 +38,7 @@ impl Time {
     }
 
     pub fn to_string(&self) -> String {
-        self.inner.format("%-I:%M%P")
+        self.inner.format("%-I:%M%p")
     }
 }
 
