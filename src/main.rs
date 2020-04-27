@@ -26,11 +26,7 @@ fn print_status(status: Status) {
         Schedule::SunsetToSunrise => "Sunrise",
         Schedule::Off => "Tomorrow",
         Schedule::Custom(from_time, to_time) => {
-            println!(
-                "From:\n=> {} to {}",
-                from_time.to_string(),
-                to_time.to_string()
-            );
+            println!("From:\n=> {} to {}", from_time, to_time);
             "Tomorrow"
         }
     };

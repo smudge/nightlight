@@ -3,8 +3,7 @@ extern crate time;
 use std::fmt;
 
 pub struct Time {
-    hour: u8,
-    min: u8,
+    inner: time::Time,
 }
 
 impl Time {
@@ -22,27 +21,30 @@ impl Time {
         // TODO: Look at system locale and decide if am/pm can be inferred.
 
         match time {
-            Ok(time) => Ok(Time {
-                hour: time.hour(),
-                min: time.minute(),
-            }),
+            Ok(time) => Ok(Time { inner: time }),
             Err(_) => Err(format!("Invalid string value '{}'", value)),
         }
     }
 
-    pub fn from_tuple(tuple: (u8, u8)) -> Time {
-        Time {
-            hour: tuple.0,
-            min: tuple.1,
+    pub fn from_tuple(tuple: (u8, u8)) -> Result<Time, String> {
+        match time::Time::try_from_hms(tuple.0, tuple.1, 0) {
+            Ok(time) => Ok(Time { inner: time }),
+            Err(_) => Err("Unable to read time value".to_string()),
         }
     }
 
     pub fn tuple(&self) -> (u8, u8) {
-        (self.hour, self.min)
+        (self.inner.hour(), self.inner.minute())
     }
 
     pub fn to_string(&self) -> String {
-        format!("{}:{}", self.hour, self.min)
+        self.inner.format("%-I:%M%P")
+    }
+}
+
+impl fmt::Display for Time {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.to_string())
     }
 }
 

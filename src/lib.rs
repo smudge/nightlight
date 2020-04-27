@@ -64,8 +64,8 @@ impl NightLight {
     }
 
     fn schedule(mode: i32, from: (u8, u8), to: (u8, u8)) -> Result<Schedule, String> {
-        let from = Time::from_tuple(from);
-        let to = Time::from_tuple(to);
+        let from = Time::from_tuple(from)?;
+        let to = Time::from_tuple(to)?;
 
         match mode {
             0 => Ok(Schedule::Off),
