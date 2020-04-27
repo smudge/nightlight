@@ -14,7 +14,7 @@ fn print_usage(program: &String) {
     println!("  on                      Turn Night Shift on (until sunrise/scheduled stop)");
     println!("  off                     Turn Night Shift off (until sunset/scheduled start)");
     println!("  schedule                Start schedule from sunset to sunrise");
-    println!("  schedule [from] [to]    Start a custom schedule");
+    println!("  schedule [from] [to]    Start a custom schedule (12 or 24-hour time format)");
     println!("  unschedule              Stop schedule");
     println!("  temp [0-100]            Set color temperature preference (does not affect on/off)");
     println!("  status                  View current status and configuration");
