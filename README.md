@@ -118,7 +118,9 @@ fn main() {
 - [X] Ability to see current status of Night Shift
 - [X] Ability to enable/disable sunrise/sundown schedule
 - [X] Ability to enable/disable custom schedules
-- [ ] Ensure that changing schedule doesn't affect on/off state.
+- [X] Ensure that changing schedule doesn't affect on/off state.
+- [X] Make time display as properly-formatted 12-hour time
+- [ ] Use system config for time parse/format (12 vs 24).
 - [ ] API improvements and full documentation
 - [ ] Test coverage of schedule/time parsing.
 - [ ] Tests that use fake/stub ObjC library.
