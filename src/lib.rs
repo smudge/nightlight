@@ -5,7 +5,7 @@ mod schedule;
 
 pub use schedule::{Schedule, Time};
 
-pub struct NightShift {
+pub struct NightLight {
     client: ffi::CBBlueLightClient,
 }
 
@@ -15,9 +15,9 @@ pub struct Status {
     pub color_temperature: i32,
 }
 
-impl NightShift {
-    pub fn new() -> NightShift {
-        NightShift {
+impl NightLight {
+    pub fn new() -> NightLight {
+        NightLight {
             client: ffi::CBBlueLightClient::new(),
         }
     }
@@ -55,7 +55,7 @@ impl NightShift {
 
     pub fn status(&self) -> Result<Status, String> {
         let status = self.client.status()?;
-        let schedule = NightShift::schedule(status.mode(), status.from_time(), status.to_time())?;
+        let schedule = NightLight::schedule(status.mode(), status.from_time(), status.to_time())?;
         Ok(Status {
             currently_active: status.enabled(),
             schedule,
