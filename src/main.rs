@@ -46,39 +46,39 @@ fn main() {
         exit(1);
     }
 
-    let night_shift = NightLight::new();
+    let client = NightLight::new();
     if args.len() == 2 && args[1] == "on" {
-        night_shift.on().unwrap_or_else(|e| error(e));
+        client.on().unwrap_or_else(|e| error(e));
     } else if args.len() == 2 && args[1] == "off" {
-        night_shift.off().unwrap_or_else(|e| error(e));
+        client.off().unwrap_or_else(|e| error(e));
     } else if args.len() == 2 && args[1] == "schedule" {
-        night_shift
+        client
             .set_schedule(Schedule::SunsetToSunrise)
             .unwrap_or_else(|e| error(e));
     } else if args.len() == 4 && args[1] == "schedule" {
-        schedule(night_shift, &args[2], &args[3]).unwrap_or_else(|e| error(e));
+        schedule(client, &args[2], &args[3]).unwrap_or_else(|e| error(e));
     } else if args.len() == 2 && args[1] == "unschedule" {
-        night_shift
+        client
             .set_schedule(Schedule::Off)
             .unwrap_or_else(|e| error(e));
     } else if args.len() == 2 && args[1] == "status" {
-        match night_shift.status() {
+        match client.status() {
             Ok(status) => print_status(status),
             Err(e) => error(e),
         }
     } else if args.len() == 3 && args[1] == "temp" {
         let temp = args[2].parse().unwrap_or(-1);
-        night_shift.set_temp(temp).unwrap_or_else(|e| error(e));
+        client.set_temp(temp).unwrap_or_else(|e| error(e));
     } else {
         print_usage(&args[0]);
     }
 }
 
-fn schedule(night_shift: NightLight, from: &String, to: &String) -> Result<(), String> {
+fn schedule(client: NightLight, from: &String, to: &String) -> Result<(), String> {
     let from = Time::parse(from)?;
     let to = Time::parse(to)?;
 
-    night_shift.set_schedule(Schedule::Custom(from, to))
+    client.set_schedule(Schedule::Custom(from, to))
 }
 
 fn error(text: String) {

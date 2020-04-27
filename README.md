@@ -97,19 +97,19 @@ extern crate nightlight;
 use nightlight::{NightLight, Schedule};
 
 fn main() {
-    let night_shift = nightlight::new();
+    let night_light = NightLight::new();
 
-    if night_shift.status().unwrap().currently_active {
+    if night_light.status().unwrap().currently_active {
         println!("Turning Night Shift off...");
-        night_shift.off().unwrap();
+        night_light.off().unwrap();
     }
 
     println!("Setting schedule and temperature...");
-    night_shift.set_schedule(Schedule::SunsetToSunrise).unwrap();
-    night_shift.set_temp(70).unwrap();
+    night_light.set_schedule(Schedule::SunsetToSunrise).unwrap();
+    night_light.set_temp(70).unwrap();
 
     println!("Turning Night Shift on...");
-    night_shift.on().unwrap();
+    night_light.on().unwrap();
 }
 ```
 
