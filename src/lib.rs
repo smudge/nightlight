@@ -35,14 +35,17 @@ impl NightLight {
     }
 
     pub fn set_schedule(&self, schedule: Schedule) -> Result<(), String> {
+        let was_on = self.status()?.currently_active;
+
         match schedule {
-            Schedule::Off => self.client.set_mode(0),
-            Schedule::SunsetToSunrise => self.client.set_mode(1),
+            Schedule::Off => self.client.set_mode(0)?,
+            Schedule::SunsetToSunrise => self.client.set_mode(1)?,
             Schedule::Custom(from, to) => {
                 self.client.set_mode(2)?;
-                self.client.set_schedule(from.tuple(), to.tuple())
+                self.client.set_schedule(from.tuple(), to.tuple())?
             }
         }
+        self.toggle(was_on)
     }
 
     pub fn set_temp(&self, temp: i32) -> Result<(), String> {
