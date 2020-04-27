@@ -1,6 +1,6 @@
 [package]
 name = "nightshift"
-version = "0.0.3"
+version = "0.0.4"
 authors = ["smudge <nathan@ngriffith.com>"]
 edition = "2018"
 categories = ["command-line-utilities", "os::macos-apis"]

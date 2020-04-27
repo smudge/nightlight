@@ -84,7 +84,7 @@ nightshift status
 In addition to a CLI, `nightshift` can be pulled-in as a dependency for other Rust crates:
 
 ```
-nightshift = "0.0.3"
+nightshift = "0.0.4"
 ```
 
 Here's an example `fn` that toggles Night Shift off,

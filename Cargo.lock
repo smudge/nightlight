@@ -53,7 +53,7 @@ dependencies = [
 
 [[package]]
 name = "nightshift"
-version = "0.0.3"
+version = "0.0.4"
 dependencies = [
  "objc 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.2.10 (registry+https://github.com/rust-lang/crates.io-index)",
