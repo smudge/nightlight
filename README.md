@@ -1,4 +1,4 @@
-# nightshift
+# nightlight
 
 > A CLI for configuring "Night Shift" on macOS 🌕🌖🌗🌘🌑
 
@@ -12,7 +12,7 @@ that can theoretically accomplish most of what third-party alternatives
 of now, there is no way to programmatically configure Night Shift (without
 entering the system preferences GUI), making its current usage more limited.
 
-This `nightshift` CLI aims to enable such access via a few simple commands.
+This `nightlight` CLI aims to enable such access via a few simple commands.
 (Or, alternatively, via library access for other Rust tools.)
 
 ## Installing
@@ -21,7 +21,7 @@ This `nightshift` CLI aims to enable such access via a few simple commands.
 and install from crates.io by running:
 
 ```
-cargo install nightshift
+cargo install nightlight
 ```
 
 Or clone this repo and install from the local path:
@@ -39,52 +39,52 @@ First, make sure you are running macOS Sierra or newer.
 Turn Night Shift on (until tomorrow/sunrise):
 
 ```
-nightshift on
+nightlight on
 ```
 
 Turn Night Shift off:
 
 ```
-nightshift off
+nightlight off
 ```
 
 Set color temperature (a number from 0 to 100):
 
 ```
-nightshift temp 70
+nightlight temp 70
 ```
 
 Schedule from sunset to sunrise:
 
 ```
-nightshift schedule
+nightlight schedule
 ```
 
 Set a custom schedule (in 12 or 24-hour time format):
 
 ```
-nightshift schedule 19:45 6:00
-nightshift schedule 7:45pm 6am
+nightlight schedule 19:45 6:00
+nightlight schedule 7:45pm 6am
 ```
 
 Disable the current schedule:
 
 ```
-nightshift unschedule
+nightlight unschedule
 ```
 
 View current schedule, on/off state, and color temperature preference:
 
 ```
-nightshift status
+nightlight status
 ```
 
 ### Rust API
 
-In addition to a CLI, `nightshift` can be pulled-in as a dependency for other Rust crates:
+In addition to a CLI, `nightlight` can be pulled-in as a dependency for other Rust crates:
 
 ```
-nightshift = "0.0.4"
+nightlight = "0.0.4"
 ```
 
 Here's an example `fn` that toggles Night Shift off,
@@ -92,12 +92,12 @@ changes the schedule and color temperature preference,
 and then toggles the feature back on:
 
 ```rust
-extern crate nightshift;
+extern crate nightlight;
 
-use nightshift::{NightShift, Schedule};
+use nightlight::{NightShift, Schedule};
 
 fn main() {
-    let night_shift = NightShift::new();
+    let night_shift = nightlight::new();
 
     if night_shift.status().unwrap().currently_active {
         println!("Turning Night Shift off...");
@@ -141,4 +141,4 @@ fn main() {
 
 ## License
 
-`nightshift` is released under the [MIT License](LICENSE).
+`nightlight` is released under the [MIT License](LICENSE).

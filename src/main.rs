@@ -1,4 +1,4 @@
-use nightshift::{NightShift, Schedule, Status, Time};
+use nightlight::{NightShift, Schedule, Status, Time};
 use std::env::args;
 use std::process::exit;
 
