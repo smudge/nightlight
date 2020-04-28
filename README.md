@@ -122,6 +122,7 @@ fn main() {
 - [X] Make time display as properly-formatted 12-hour time
 - [ ] Use system config for time parse/format (12 vs 24).
 - [ ] API improvements and full documentation
+- [ ] Consider command outputs: concise, human-readable, machine-parsable.
 - [ ] Test coverage of schedule/time parsing.
 - [ ] Tests that use fake/stub ObjC library.
 - [ ] Support for "Automatically adjust brightness" feature.
