@@ -124,6 +124,7 @@ fn main() {
 - [ ] API improvements and full documentation
 - [ ] Test coverage of schedule/time parsing.
 - [ ] Tests that use fake/stub ObjC library.
+- [ ] Support for "Automatically adjust brightness" feature.
 - [ ] Cross-platform support (e.g. Windows' "Night Light")
 
 ## Contributing
