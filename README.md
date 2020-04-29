@@ -84,7 +84,7 @@ nightlight status
 In addition to a CLI, `nightlight` can be pulled-in as a dependency for other Rust crates:
 
 ```
-nightlight = "0.0.5"
+nightlight = "0.0.6"
 ```
 
 Here's an example `fn` that toggles Night Shift off,
@@ -118,10 +118,14 @@ fn main() {
 - [X] Ability to see current status of Night Shift
 - [X] Ability to enable/disable sunrise/sundown schedule
 - [X] Ability to enable/disable custom schedules
-- [ ] Ensure that changing schedule doesn't affect on/off state.
+- [X] Ensure that changing schedule doesn't affect on/off state.
+- [X] Make time display as properly-formatted 12-hour time
+- [ ] Use system config for time parse/format (12 vs 24).
 - [ ] API improvements and full documentation
+- [ ] Consider command outputs: concise, human-readable, machine-parsable.
 - [ ] Test coverage of schedule/time parsing.
 - [ ] Tests that use fake/stub ObjC library.
+- [ ] Support for "Automatically adjust brightness" feature.
 - [ ] Cross-platform support (e.g. Windows' "Night Light")
 
 ## Contributing
@@ -138,6 +142,7 @@ fn main() {
 * GitHub user `jenghis` for the (now archived) [nshift](https://github.com/jenghis/nshift) repo/CLI
 * The maintainers of the Rust [objc crate](https://github.com/SSheldon/rust-objc)
 * Carol Nichols and Steve Klabnik for the [official book](https://doc.rust-lang.org/book/) on Rust
+* ABH, CB, JP, MF, and MK for brainstorming crate names with me
 
 ## License
 
