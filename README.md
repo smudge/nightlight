@@ -142,7 +142,7 @@ fn main() {
 * GitHub user `jenghis` for the (now archived) [nshift](https://github.com/jenghis/nshift) repo/CLI
 * The maintainers of the Rust [objc crate](https://github.com/SSheldon/rust-objc)
 * Carol Nichols and Steve Klabnik for the [official book](https://doc.rust-lang.org/book/) on Rust
-* ABH, CB, JP, MF, and MK for brainstorming crate names with me
+* ABH, AF, CB, JP, and MK for brainstorming crate names with me
 
 ## License
 
