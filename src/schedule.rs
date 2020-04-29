@@ -4,9 +4,15 @@ use std::fmt;
 
 pub struct Time {
     inner: time::Time,
+    locale: String,
 }
 
 impl Time {
+    fn new(inner: time::Time) -> Result<Time, String> {
+        let locale = crate::ffi::macos_locale()?.to_string();
+        Ok(Time { inner, locale })
+    }
+
     pub fn parse(value: &String) -> Result<Time, String> {
         let mut time = time::Time::parse(value.to_uppercase(), "%-I:%M%P");
         if time.is_err() {
@@ -21,14 +27,14 @@ impl Time {
         // TODO: Look at system locale and decide if am/pm can be inferred.
 
         match time {
-            Ok(time) => Ok(Time { inner: time }),
+            Ok(time) => Time::new(time),
             Err(_) => Err(format!("Invalid string value '{}'", value)),
         }
     }
 
     pub fn from_tuple(tuple: (u8, u8)) -> Result<Time, String> {
         match time::Time::try_from_hms(tuple.0, tuple.1, 0) {
-            Ok(time) => Ok(Time { inner: time }),
+            Ok(time) => Time::new(time),
             Err(_) => Err("Unable to read time value".to_string()),
         }
     }
@@ -38,7 +44,12 @@ impl Time {
     }
 
     pub fn to_string(&self) -> String {
-        self.inner.format("%-I:%M%p")
+        // TODO: locales, how do they work?
+        if self.locale == "en_US" {
+            self.inner.format("%-I:%M%p")
+        } else {
+            self.inner.format("%-H:%M")
+        }
     }
 }
 
