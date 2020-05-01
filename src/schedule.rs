@@ -1,5 +1,6 @@
 extern crate time;
 
+use crate::ffi::Locale;
 use std::fmt;
 
 pub struct Time {
@@ -7,6 +8,11 @@ pub struct Time {
 }
 
 impl Time {
+    fn new(inner: time::Time) -> Result<Time, String> {
+        Locale::initialize()?;
+        Ok(Time { inner })
+    }
+
     pub fn parse(value: &String) -> Result<Time, String> {
         let mut time = time::Time::parse(value.to_uppercase(), "%-I:%M%P");
         if time.is_err() {
@@ -18,17 +24,16 @@ impl Time {
         if time.is_err() {
             time = time::Time::parse(value, "%-H");
         }
-        // TODO: Look at system locale and decide if am/pm can be inferred.
 
         match time {
-            Ok(time) => Ok(Time { inner: time }),
+            Ok(time) => Time::new(time),
             Err(_) => Err(format!("Invalid string value '{}'", value)),
         }
     }
 
     pub fn from_tuple(tuple: (u8, u8)) -> Result<Time, String> {
         match time::Time::try_from_hms(tuple.0, tuple.1, 0) {
-            Ok(time) => Ok(Time { inner: time }),
+            Ok(time) => Time::new(time),
             Err(_) => Err("Unable to read time value".to_string()),
         }
     }
@@ -38,7 +43,11 @@ impl Time {
     }
 
     pub fn to_string(&self) -> String {
-        self.inner.format("%-I:%M%p")
+        if Locale::current().is_24_hr() {
+            self.inner.format("%-H:%M")
+        } else {
+            self.inner.format("%-I:%M%p")
+        }
     }
 }
 

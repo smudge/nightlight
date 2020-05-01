@@ -1,6 +1,6 @@
 [package]
 name = "nightlight"
-version = "0.0.6"
+version = "0.0.7"
 authors = ["smudge <nathan@ngriffith.com>"]
 edition = "2018"
 categories = ["command-line-utilities", "os::macos-apis"]
@@ -11,4 +11,5 @@ license = "MIT"
 
 [dependencies]
 objc = "0.2"
+objc-foundation = "0.1.1"
 time = "0.2.10"

@@ -84,7 +84,7 @@ nightlight status
 In addition to a CLI, `nightlight` can be pulled-in as a dependency for other Rust crates:
 
 ```
-nightlight = "0.0.6"
+nightlight = "0.0.7"
 ```
 
 Here's an example `fn` that toggles Night Shift off,
@@ -120,7 +120,7 @@ fn main() {
 - [X] Ability to enable/disable custom schedules
 - [X] Ensure that changing schedule doesn't affect on/off state.
 - [X] Make time display as properly-formatted 12-hour time
-- [ ] Use system config for time parse/format (12 vs 24).
+- [X] Use system config for time parse/format (12 vs 24).
 - [ ] API improvements and full documentation
 - [ ] Consider command outputs: concise, human-readable, machine-parsable.
 - [ ] Test coverage of schedule/time parsing.
