@@ -5,13 +5,12 @@ use std::fmt;
 
 pub struct Time {
     inner: time::Time,
-    locale: Locale,
 }
 
 impl Time {
     fn new(inner: time::Time) -> Result<Time, String> {
-        let locale = Locale::current()?;
-        Ok(Time { inner, locale })
+        Locale::initialize()?;
+        Ok(Time { inner })
     }
 
     pub fn parse(value: &String) -> Result<Time, String> {
@@ -25,7 +24,6 @@ impl Time {
         if time.is_err() {
             time = time::Time::parse(value, "%-H");
         }
-        // TODO: Look at system locale and decide if am/pm can be inferred.
 
         match time {
             Ok(time) => Time::new(time),
@@ -45,7 +43,7 @@ impl Time {
     }
 
     pub fn to_string(&self) -> String {
-        if self.locale.is_24_hr() {
+        if Locale::current().is_24_hr() {
             self.inner.format("%-H:%M")
         } else {
             self.inner.format("%-I:%M%p")
