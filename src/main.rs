@@ -13,7 +13,7 @@ fn print_usage(program: &String) {
     println!("  status                  View current on/off status");
     println!("\ncolor temperature:");
     println!("  temp                    View temperature preference");
-    println!("  temp <0-100>            Set color temperature preference (does not affect on/off)");
+    println!("  temp <0-100>            Set temperature preference (does not affect on/off)");
     println!("\nautomated schedule:");
     println!("  schedule                View the current schedule");
     println!("  schedule start          Start schedule from sunset to sunrise");
