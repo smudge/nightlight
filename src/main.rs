@@ -48,13 +48,13 @@ fn main() {
         client.on().unwrap_or_else(|e| error(e));
     } else if args.len() == 2 && args[1] == "off" {
         client.off().unwrap_or_else(|e| error(e));
-    } else if args.len() == 2 && args[1] == "schedule" {
+    } else if args.len() == 3 && args[1] == "schedule" && args[2] == "start" {
         client
             .set_schedule(Schedule::SunsetToSunrise)
             .unwrap_or_else(|e| error(e));
     } else if args.len() == 4 && args[1] == "schedule" {
         schedule(client, &args[2], &args[3]).unwrap_or_else(|e| error(e));
-    } else if args.len() == 2 && args[1] == "unschedule" {
+    } else if args.len() == 3 && args[1] == "schedule" && args[2] == "stop" {
         client
             .set_schedule(Schedule::Off)
             .unwrap_or_else(|e| error(e));
