@@ -58,7 +58,7 @@ dependencies = [
 
 [[package]]
 name = "nightlight"
-version = "0.0.6"
+version = "0.0.7"
 dependencies = [
  "objc 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "objc-foundation 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
