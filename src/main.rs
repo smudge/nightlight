@@ -9,15 +9,20 @@ fn print_usage(program: &String) {
         env!("CARGO_PKG_VERSION")
     );
     println!("{}\n", env!("CARGO_PKG_DESCRIPTION"));
-    println!("Usage:\n  {} [command]\n", program);
-    println!("Available Commands:");
+    println!("Usage:\n  {} [--help] <command> [<args>]\n", program);
+    println!("Available Commands By Category:");
+    println!("\nmanual on/off control:");
     println!("  on                      Turn Night Shift on (until sunrise/scheduled stop)");
     println!("  off                     Turn Night Shift off (until sunset/scheduled start)");
-    println!("  schedule                Start schedule from sunset to sunrise");
-    println!("  schedule [from] [to]    Start a custom schedule (12 or 24-hour time format)");
-    println!("  unschedule              Stop schedule");
-    println!("  temp [0-100]            Set color temperature preference (does not affect on/off)");
-    println!("  status                  View current status and configuration");
+    println!("  status                  View current on/off status");
+    println!("\ncolor temperature:");
+    println!("  temp                    View temperature preference");
+    println!("  temp <0-100>            Set color temperature preference (does not affect on/off)");
+    println!("\nautomated schedule:");
+    println!("  schedule                View the current schedule");
+    println!("  schedule start          Start schedule from sunset to sunrise");
+    println!("  schedule <from> <to>    Start a custom schedule (12 or 24-hour time format)");
+    println!("  schedule stop           Stop the current schedule");
 }
 
 fn print_status(status: Status) {
