@@ -8,8 +8,8 @@ fn print_usage(program: &String) {
     println!("usage: {} [--help] <command> [<args>]\n", program);
     println!("Available Commands By Category:");
     println!("\nmanual on/off control:");
-    println!("  on                      Turn Night Shift on (until sunrise/scheduled stop)");
-    println!("  off                     Turn Night Shift off (until sunset/scheduled start)");
+    println!("  on                      Turn Night Shift on (until scheduled stop)");
+    println!("  off                     Turn Night Shift off (until scheduled start)");
     println!("  status                  View current on/off status");
     println!("\ncolor temperature:");
     println!("  temp                    View temperature preference");
