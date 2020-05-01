@@ -58,34 +58,40 @@ nightlight status
 
 #### Controlling the Temperature:
 
-Set color temperature (a number from 0 to 100):
-
-```
-nightlight temp 70
-```
-
 View current temperature setting:
 
 ```
 nightlight temp
 ```
 
+Set color temperature (a number from 0 to 100):
+
+```
+nightlight temp 70
+```
+
 #### Scheduling:
 
-Schedule from sunset to sunrise:
+View the current schedule:
 
 ```
-nightlight schedule on
+nightlight schedule
 ```
 
-Set a custom schedule (in 12 or 24-hour time format):
+Start schedule from sunset to sunrise:
+
+```
+nightlight schedule start
+```
+
+Start a custom schedule (in 12 or 24-hour time format):
 
 ```
 nightlight schedule 19:45 6:00
 nightlight schedule 7:45pm 6am
 ```
 
-Disable the schedule:
+Stop the current schedule:
 
 ```
 nightlight schedule off
