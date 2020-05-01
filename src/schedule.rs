@@ -1,15 +1,16 @@
 extern crate time;
 
+use crate::ffi::Locale;
 use std::fmt;
 
 pub struct Time {
     inner: time::Time,
-    locale: String,
+    locale: Locale,
 }
 
 impl Time {
     fn new(inner: time::Time) -> Result<Time, String> {
-        let locale = crate::ffi::macos_locale()?.to_string();
+        let locale = Locale::current()?;
         Ok(Time { inner, locale })
     }
 
@@ -44,11 +45,10 @@ impl Time {
     }
 
     pub fn to_string(&self) -> String {
-        // TODO: locales, how do they work?
-        if self.locale == "en_US" {
-            self.inner.format("%-I:%M%p")
-        } else {
+        if self.locale.is_24_hr() {
             self.inner.format("%-H:%M")
+        } else {
+            self.inner.format("%-I:%M%p")
         }
     }
 }
