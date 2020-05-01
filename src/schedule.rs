@@ -65,9 +65,9 @@ pub enum Schedule {
 
 impl fmt::Display for Schedule {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
+        match self {
             Schedule::Off => write!(f, "off"),
-            Schedule::Custom(_, _) => write!(f, "custom"),
+            Schedule::Custom(from, to) => write!(f, "{} to {}", from, to),
             Schedule::SunsetToSunrise => write!(f, "sunset to sunrise"),
         }
     }

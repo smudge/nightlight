@@ -22,17 +22,22 @@ fn print_usage(program: &String) {
 }
 
 fn print_status(status: Status) {
-    println!("Schedule:\n=> {}", status.schedule);
     let off_at = match status.schedule {
-        Schedule::SunsetToSunrise => "Sunrise",
-        Schedule::Off => "Tomorrow",
+        Schedule::SunsetToSunrise => " until sunrise".to_string(),
+        Schedule::Off => "".to_string(),
         Schedule::Custom(from_time, to_time) => {
-            println!("From:\n=> {} to {}", from_time, to_time);
-            "Tomorrow"
+            if status.currently_active {
+                format!(" until {}", to_time)
+            } else {
+                format!(" until {}", from_time)
+            }
         }
     };
-    println!("On Until {}:\n=> {}", off_at, status.currently_active);
-    println!("Color Temperature:\n=> {}", status.color_temperature);
+    let on_or_off = match status.currently_active {
+        true => "on",
+        false => "off",
+    };
+    println!("{}{}", on_or_off, off_at);
 }
 
 fn main() {
@@ -48,6 +53,11 @@ fn main() {
         client.on().unwrap_or_else(|e| error(e));
     } else if args.len() == 2 && args[1] == "off" {
         client.off().unwrap_or_else(|e| error(e));
+    } else if args.len() == 2 && args[1] == "schedule" {
+        match client.status() {
+            Ok(status) => println!("{}", status.schedule),
+            Err(e) => error(e),
+        }
     } else if args.len() == 3 && args[1] == "schedule" && args[2] == "start" {
         client
             .set_schedule(Schedule::SunsetToSunrise)
@@ -61,6 +71,11 @@ fn main() {
     } else if args.len() == 2 && args[1] == "status" {
         match client.status() {
             Ok(status) => print_status(status),
+            Err(e) => error(e),
+        }
+    } else if args.len() == 2 && args[1] == "temp" {
+        match client.status() {
+            Ok(status) => println!("{}", status.color_temperature),
             Err(e) => error(e),
         }
     } else if args.len() == 3 && args[1] == "temp" {
