@@ -5,7 +5,7 @@ use std::process::exit;
 fn print_usage(program: &String) {
     println!("{} v{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
     println!("  {}\n", env!("CARGO_PKG_DESCRIPTION"));
-    println!("usage: {} [--help] <command> [<args>]\n", program);
+    println!("usage:\n  {} [--help] <command> [<args>]\n", program);
     println!("Available Commands By Category:");
     println!("\nmanual on/off control:");
     println!("  on                      Turn Night Shift on (until scheduled stop)");
