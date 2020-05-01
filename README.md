@@ -36,6 +36,8 @@ First, make sure you are running macOS Sierra or newer.
 
 ### Command-Line Interface
 
+#### Manual On/Off:
+
 Turn Night Shift on (until tomorrow/sunrise):
 
 ```
@@ -48,16 +50,32 @@ Turn Night Shift off:
 nightlight off
 ```
 
+View current on/off status:
+
+```
+nightlight status
+```
+
+#### Controlling the Temperature:
+
 Set color temperature (a number from 0 to 100):
 
 ```
 nightlight temp 70
 ```
 
+View current temperature setting:
+
+```
+nightlight temp
+```
+
+#### Scheduling:
+
 Schedule from sunset to sunrise:
 
 ```
-nightlight schedule
+nightlight schedule on
 ```
 
 Set a custom schedule (in 12 or 24-hour time format):
@@ -67,16 +85,10 @@ nightlight schedule 19:45 6:00
 nightlight schedule 7:45pm 6am
 ```
 
-Disable the current schedule:
+Disable the schedule:
 
 ```
-nightlight unschedule
-```
-
-View current schedule, on/off state, and color temperature preference:
-
-```
-nightlight status
+nightlight schedule off
 ```
 
 ### Rust API
