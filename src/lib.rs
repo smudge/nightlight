@@ -2,35 +2,13 @@ extern crate objc;
 
 mod ffi;
 mod schedule;
+mod status;
 
 pub use schedule::{Schedule, Time};
-use std::fmt;
+pub use status::Status;
 
 pub struct NightLight {
     client: ffi::CBBlueLightClient,
-}
-
-pub enum Status {
-    On,
-    Off,
-}
-
-impl fmt::Display for Status {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Status::On => write!(f, "on"),
-            Status::Off => write!(f, "off"),
-        }
-    }
-}
-
-impl Status {
-    fn as_bool(&self) -> bool {
-        match self {
-            Status::On => true,
-            Status::Off => false,
-        }
-    }
 }
 
 impl NightLight {
