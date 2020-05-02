@@ -33,11 +33,7 @@ fn print_status(client: NightLight) -> Result<(), String> {
             Status::Off => format!(" until {}", from_time),
         },
     };
-    let on_or_off = match status {
-        Status::On => "on",
-        Status::Off => "off",
-    };
-    Ok(println!("{}{}", on_or_off, off_at))
+    Ok(println!("{}{}", status, off_at))
 }
 
 fn main() {
