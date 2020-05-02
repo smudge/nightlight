@@ -9,10 +9,9 @@ pub struct NightLight {
     client: ffi::CBBlueLightClient,
 }
 
-pub struct Status {
-    pub currently_active: bool,
-    pub schedule: Schedule,
-    pub color_temperature: i32,
+pub enum Status {
+    On,
+    Off,
 }
 
 impl NightLight {
@@ -23,19 +22,22 @@ impl NightLight {
     }
 
     pub fn on(&self) -> Result<(), String> {
-        self.toggle(true)
+        self.toggle(Status::On)
     }
 
     pub fn off(&self) -> Result<(), String> {
-        self.toggle(false)
+        self.toggle(Status::Off)
     }
 
-    pub fn toggle(&self, on: bool) -> Result<(), String> {
-        self.client.set_enabled(on)
+    pub fn toggle(&self, status: Status) -> Result<(), String> {
+        match status {
+            Status::On => self.client.set_enabled(true),
+            Status::Off => self.client.set_enabled(false),
+        }
     }
 
     pub fn set_schedule(&self, schedule: Schedule) -> Result<(), String> {
-        let was_on = self.status()?.currently_active;
+        let status = self.status()?;
 
         match schedule {
             Schedule::Off => self.client.set_mode(0)?,
@@ -45,7 +47,12 @@ impl NightLight {
                 self.client.set_schedule(from.tuple(), to.tuple())?
             }
         }
-        self.toggle(was_on)
+        self.toggle(status)
+    }
+
+    pub fn get_schedule(&self) -> Result<Schedule, String> {
+        let status = self.client.status()?;
+        NightLight::schedule(status.mode(), status.from_time(), status.to_time())
     }
 
     pub fn set_temp(&self, temp: i32) -> Result<(), String> {
@@ -56,13 +63,14 @@ impl NightLight {
         self.client.set_strength(temp as f32 / 100.0)
     }
 
+    pub fn get_temp(&self) -> Result<i32, String> {
+        self.client.get_strength()
+    }
+
     pub fn status(&self) -> Result<Status, String> {
-        let status = self.client.status()?;
-        let schedule = NightLight::schedule(status.mode(), status.from_time(), status.to_time())?;
-        Ok(Status {
-            currently_active: status.enabled(),
-            schedule,
-            color_temperature: self.client.get_strength()?,
+        Ok(match self.client.status()?.enabled() {
+            true => Status::On,
+            false => Status::Off,
         })
     }
 

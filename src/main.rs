@@ -21,23 +21,23 @@ fn print_usage(program: &String) {
     println!("  schedule stop           Stop the current schedule");
 }
 
-fn print_status(status: Status) {
-    let off_at = match status.schedule {
+fn print_status(client: NightLight) -> Result<(), String> {
+    let schedule = client.get_schedule()?;
+    let status = client.status()?;
+
+    let off_at = match schedule {
         Schedule::SunsetToSunrise => " until sunrise".to_string(),
         Schedule::Off => "".to_string(),
-        Schedule::Custom(from_time, to_time) => {
-            if status.currently_active {
-                format!(" until {}", to_time)
-            } else {
-                format!(" until {}", from_time)
-            }
-        }
+        Schedule::Custom(from_time, to_time) => match status {
+            Status::On => format!(" until {}", to_time),
+            Status::Off => format!(" until {}", from_time),
+        },
     };
-    let on_or_off = match status.currently_active {
-        true => "on",
-        false => "off",
+    let on_or_off = match status {
+        Status::On => "on",
+        Status::Off => "off",
     };
-    println!("{}{}", on_or_off, off_at);
+    Ok(println!("{}{}", on_or_off, off_at))
 }
 
 fn main() {
@@ -54,8 +54,8 @@ fn main() {
     } else if args.len() == 2 && args[1] == "off" {
         client.off().unwrap_or_else(|e| error(e));
     } else if args.len() == 2 && args[1] == "schedule" {
-        match client.status() {
-            Ok(status) => println!("{}", status.schedule),
+        match client.get_schedule() {
+            Ok(schedule) => println!("{}", schedule),
             Err(e) => error(e),
         }
     } else if args.len() == 3 && args[1] == "schedule" && args[2] == "start" {
@@ -63,19 +63,16 @@ fn main() {
             .set_schedule(Schedule::SunsetToSunrise)
             .unwrap_or_else(|e| error(e));
     } else if args.len() == 4 && args[1] == "schedule" {
-        schedule(client, &args[2], &args[3]).unwrap_or_else(|e| error(e));
+        set_custom_schedule(client, &args[2], &args[3]).unwrap_or_else(|e| error(e));
     } else if args.len() == 3 && args[1] == "schedule" && args[2] == "stop" {
         client
             .set_schedule(Schedule::Off)
             .unwrap_or_else(|e| error(e));
     } else if args.len() == 2 && args[1] == "status" {
-        match client.status() {
-            Ok(status) => print_status(status),
-            Err(e) => error(e),
-        }
+        print_status(client).unwrap_or_else(|e| error(e))
     } else if args.len() == 2 && args[1] == "temp" {
-        match client.status() {
-            Ok(status) => println!("{}", status.color_temperature),
+        match client.get_temp() {
+            Ok(temp) => println!("{}", temp),
             Err(e) => error(e),
         }
     } else if args.len() == 3 && args[1] == "temp" {
@@ -86,7 +83,7 @@ fn main() {
     }
 }
 
-fn schedule(client: NightLight, from: &String, to: &String) -> Result<(), String> {
+fn set_custom_schedule(client: NightLight, from: &String, to: &String) -> Result<(), String> {
     let from = Time::parse(from)?;
     let to = Time::parse(to)?;
 
