@@ -1,5 +1,3 @@
-extern crate objc;
-
 mod ffi;
 mod schedule;
 mod status;
