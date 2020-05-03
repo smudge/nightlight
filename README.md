@@ -117,9 +117,8 @@ use nightlight::{NightLight, Schedule};
 fn main() {
     let night_light = NightLight::new();
 
-    if night_light.status().unwrap().currently_active {
-        println!("Turning Night Shift off...");
-        night_light.off().unwrap();
+    if night_light.status().is_on() {
+        night_light.off().unwrap(),
     }
 
     println!("Setting schedule and temperature...");

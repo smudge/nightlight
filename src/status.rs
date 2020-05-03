@@ -21,4 +21,12 @@ impl Status {
             Status::Off => false,
         }
     }
+
+    pub fn is_on(&self) -> bool {
+        self.as_bool()
+    }
+
+    pub fn is_off(&self) -> bool {
+        !self.as_bool()
+    }
 }
