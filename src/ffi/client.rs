@@ -24,7 +24,7 @@ impl CBBlueLightClient {
         if result == YES {
             Ok(())
         } else {
-            Err(format!("Failed to turn Night Shift {}", on_or_off(enabled)))
+            Err(format!("Failed to set enabled to {}", enabled).to_string())
         }
     }
 
@@ -78,13 +78,5 @@ impl CBBlueLightClient {
         } else {
             Err("Failed to get status".to_string())
         }
-    }
-}
-
-fn on_or_off(value: bool) -> String {
-    if value {
-        "on".to_string()
-    } else {
-        "off".to_string()
     }
 }

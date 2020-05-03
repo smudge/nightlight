@@ -36,6 +36,8 @@ First, make sure you are running macOS Sierra or newer.
 
 ### Command-Line Interface
 
+#### Manual On/Off:
+
 Turn Night Shift on (until tomorrow/sunrise):
 
 ```
@@ -48,35 +50,51 @@ Turn Night Shift off:
 nightlight off
 ```
 
+View current on/off status:
+
+```
+nightlight status
+```
+
+#### Controlling the Temperature:
+
+View current temperature setting:
+
+```
+nightlight temp
+```
+
 Set color temperature (a number from 0 to 100):
 
 ```
 nightlight temp 70
 ```
 
-Schedule from sunset to sunrise:
+#### Scheduling:
+
+View the current schedule:
 
 ```
 nightlight schedule
 ```
 
-Set a custom schedule (in 12 or 24-hour time format):
+Start schedule from sunset to sunrise:
+
+```
+nightlight schedule start
+```
+
+Start a custom schedule (in 12 or 24-hour time format):
 
 ```
 nightlight schedule 19:45 6:00
 nightlight schedule 7:45pm 6am
 ```
 
-Disable the current schedule:
+Stop the current schedule:
 
 ```
-nightlight unschedule
-```
-
-View current schedule, on/off state, and color temperature preference:
-
-```
-nightlight status
+nightlight schedule off
 ```
 
 ### Rust API
@@ -84,7 +102,7 @@ nightlight status
 In addition to a CLI, `nightlight` can be pulled-in as a dependency for other Rust crates:
 
 ```
-nightlight = "0.0.7"
+nightlight = "0.1.0"
 ```
 
 Here's an example `fn` that toggles Night Shift off,
@@ -99,9 +117,8 @@ use nightlight::{NightLight, Schedule};
 fn main() {
     let night_light = NightLight::new();
 
-    if night_light.status().unwrap().currently_active {
-        println!("Turning Night Shift off...");
-        night_light.off().unwrap();
+    if night_light.status().is_on() {
+        night_light.off().unwrap(),
     }
 
     println!("Setting schedule and temperature...");
