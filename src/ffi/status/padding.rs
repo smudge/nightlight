@@ -1,7 +1,8 @@
-const BYTES: usize = 20;
+const BYTES: usize = 32;
 
-/// Padding ... with some bytes
-/// Helps avoid overflowing a C-struct
+/// Padding ... with some bytes:
+/// Helps us know when the OS writes
+/// a bigger struct than we expect
 pub struct Padding {
     bytes: [u8; BYTES],
 }
@@ -14,6 +15,7 @@ impl Default for Padding {
 
 impl Padding {
     pub fn is_empty(&self) -> bool {
-        self.bytes.iter().map(|i| *i as u64).sum::<u64>() != 0
+        eprintln!("PADDING: {:?}", self.bytes);
+        self.bytes.iter().map(|i| *i as u64).sum::<u64>() == 0
     }
 }
