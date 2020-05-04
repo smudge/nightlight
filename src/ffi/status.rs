@@ -55,11 +55,7 @@ impl BlueLightStatus {
 
     pub fn new(inner: InnerStatus) -> BlueLightStatus {
         if !inner.padding.is_empty() {
-            eprintln!(
-                "======== \
-                \nWarning: Your version of macOS may be new, resulting in unexpected behavior. \
-                \n========"
-            )
+            eprintln!("Warning: Abnormalities detected. Is your macOS version very new?")
         }
         BlueLightStatus { inner }
     }
