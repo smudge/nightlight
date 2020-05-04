@@ -1,5 +1,5 @@
 use objc::runtime::{BOOL, YES};
-use std::os::raw::c_int;
+use std::os::raw::{c_int, c_ulonglong};
 
 mod padding;
 
@@ -25,7 +25,7 @@ pub struct InnerStatus {
     _sun_schedule_permitted: BOOL,
     mode: c_int,
     schedule: Schedule,
-    _disable_flags: u64,
+    _disable_flags: c_ulonglong,
     _available: BOOL,
     padding: padding::Padding,
 }
