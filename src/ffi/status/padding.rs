@@ -1,10 +1,12 @@
 const BYTES: usize = 32;
 
+use std::os::raw::c_uchar;
+
 /// Padding ... with some bytes:
 /// Helps us know when the OS writes
 /// a bigger struct than we expect
 pub struct Padding {
-    bytes: [u8; BYTES],
+    bytes: [c_uchar; BYTES],
 }
 
 impl Default for Padding {
