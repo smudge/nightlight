@@ -2,7 +2,7 @@ use crate::ffi::BlueLightStatus;
 use objc::rc::StrongPtr;
 use objc::runtime::{Object, BOOL, YES};
 use objc::{class, msg_send, sel, sel_impl};
-use std::os::raw::c_int;
+use std::os::raw::{c_float, c_int};
 
 pub struct CBBlueLightClient {
     inner: StrongPtr,
@@ -49,7 +49,7 @@ impl CBBlueLightClient {
         }
     }
 
-    pub fn set_strength(&self, strength: f32) -> Result<(), String> {
+    pub fn set_strength(&self, strength: c_float) -> Result<(), String> {
         let result: BOOL = unsafe { msg_send![*self.inner, setStrength:strength commit:YES] };
 
         if result == YES {
@@ -60,7 +60,7 @@ impl CBBlueLightClient {
     }
 
     pub fn get_strength(&self) -> Result<i32, String> {
-        let mut value: f32 = -1.0;
+        let mut value: c_float = -1.0;
         let result: BOOL = unsafe { msg_send![*self.inner, getStrength: &mut value] };
 
         if result == YES && value >= 0.0 {
