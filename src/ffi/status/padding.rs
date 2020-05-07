@@ -5,6 +5,8 @@ use std::os::raw::c_uchar;
 /// Padding ... with some bytes:
 /// Helps us know when the OS writes
 /// a bigger struct than we expect
+
+#[repr(C)]
 pub struct Padding {
     bytes: [c_uchar; BYTES],
 }
