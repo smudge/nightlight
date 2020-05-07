@@ -17,7 +17,6 @@ impl Default for Padding {
 
 impl Padding {
     pub fn is_empty(&self) -> bool {
-        eprintln!("PADDING: {:?}", self.bytes);
         self.bytes.iter().map(|i| *i as u64).sum::<u64>() == 0
     }
 }
