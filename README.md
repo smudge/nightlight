@@ -17,17 +17,20 @@ This `nightlight` CLI aims to enable such access via a few simple commands.
 
 ## Installing
 
+### via Homebrew
+
+```
+brew tap smudge/smudge
+brew install nightlight
+```
+
+### via Cargo
+
 [Set up Rust/Cargo](https://doc.rust-lang.org/book/ch01-01-installation.html)
 and install from crates.io by running:
 
 ```
 cargo install nightlight
-```
-
-Or clone this repo and install from the local path:
-
-```
-cargo install --path .
 ```
 
 ## Usage
@@ -102,7 +105,7 @@ nightlight schedule off
 In addition to a CLI, `nightlight` can be pulled-in as a dependency for other Rust crates:
 
 ```
-nightlight = "0.1.0"
+nightlight = "0.1.1"
 ```
 
 Here's an example `fn` that toggles Night Shift off,
@@ -138,12 +141,13 @@ fn main() {
 - [X] Ensure that changing schedule doesn't affect on/off state.
 - [X] Make time display as properly-formatted 12-hour time
 - [X] Use system config for time parse/format (12 vs 24).
-- [ ] API improvements and full documentation
+- [X] API improvements
 - [ ] Consider command outputs: concise, human-readable, machine-parsable.
+- [ ] Full lib documentation
 - [ ] Test coverage of schedule/time parsing.
 - [ ] Tests that use fake/stub ObjC library.
 - [ ] Support for "Automatically adjust brightness" feature.
-- [ ] Other release mechanisms (like `brew`)
+- [X] Other release mechanisms (like `brew`)
 - [ ] Cross-platform support (e.g. Windows' "Night Light")
 
 ## Contributing
