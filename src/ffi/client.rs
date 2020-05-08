@@ -10,13 +10,9 @@ pub struct CBBlueLightClient {
 
 impl CBBlueLightClient {
     pub fn new() -> CBBlueLightClient {
-        let client_class = class!(CBBlueLightClient);
-        let client = unsafe {
-            let obj: *mut Object = msg_send![client_class, alloc];
-            let obj: *mut Object = msg_send![obj, init];
-            StrongPtr::new(obj)
-        };
-        CBBlueLightClient { inner: client }
+        CBBlueLightClient {
+            inner: CBBlueLightClient::client(),
+        }
     }
 
     pub fn set_enabled(&self, enabled: bool) -> Result<(), String> {
@@ -82,6 +78,15 @@ impl CBBlueLightClient {
             Ok(BlueLightStatus::new(*ptr))
         } else {
             Err("Failed to get status".to_string())
+        }
+    }
+
+    fn client() -> StrongPtr {
+        let client_class = class!(CBBlueLightClient);
+        unsafe {
+            let obj: *mut Object = msg_send![client_class, alloc];
+            let obj: *mut Object = msg_send![obj, init];
+            StrongPtr::new(obj)
         }
     }
 }
