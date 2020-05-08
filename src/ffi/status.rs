@@ -35,6 +35,12 @@ pub struct BlueLightStatus {
     inner: InnerStatus,
 }
 
+impl InnerStatus {
+    pub fn overflowed_struct(&self) -> bool {
+        !self.padding.is_empty()
+    }
+}
+
 impl BlueLightStatus {
     pub fn c_ptr() -> InnerStatus {
         InnerStatus::default()
@@ -54,7 +60,7 @@ impl BlueLightStatus {
     }
 
     pub fn new(inner: InnerStatus) -> BlueLightStatus {
-        if !inner.padding.is_empty() {
+        if inner.overflowed_struct() {
             eprintln!("Warning: Abnormalities detected. Is your macOS version very new?")
         }
         BlueLightStatus { inner }
