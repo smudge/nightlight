@@ -60,7 +60,7 @@ impl CBBlueLightClient {
     }
 
     pub fn get_strength(&self) -> Result<i32, String> {
-        let mut ptr: MaybeUninit<c_float> = MaybeUninit::zeroed();
+        let mut ptr: MaybeUninit<c_float> = MaybeUninit::uninit();
         let result: BOOL = unsafe { msg_send![*self.inner, getStrength: &mut ptr] };
 
         let value = unsafe { ptr.assume_init() };

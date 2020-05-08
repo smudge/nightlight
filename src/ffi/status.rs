@@ -35,7 +35,7 @@ pub struct BlueLightStatus {
 
 impl BlueLightStatus {
     pub fn c_ptr() -> MaybeUninit<InnerStatus> {
-        MaybeUninit::zeroed()
+        MaybeUninit::uninit()
     }
 
     pub fn sched_ptr(from: (u8, u8), to: (u8, u8)) -> Schedule {
