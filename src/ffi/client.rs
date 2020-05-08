@@ -71,11 +71,10 @@ impl CBBlueLightClient {
     }
 
     pub fn status(&self) -> Result<BlueLightStatus, String> {
-        let mut ptr = Box::new(BlueLightStatus::c_ptr());
-        let result: BOOL =
-            unsafe { msg_send![*self.inner, getBlueLightStatus: &mut *ptr.as_mut()] };
+        let mut ptr = BlueLightStatus::c_ptr();
+        let result: BOOL = unsafe { msg_send![*self.inner, getBlueLightStatus: &mut ptr] };
         if result == YES {
-            Ok(BlueLightStatus::new(*ptr))
+            Ok(BlueLightStatus::new(unsafe { ptr.assume_init() }))
         } else {
             Err("Failed to get status".to_string())
         }

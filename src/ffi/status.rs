@@ -1,7 +1,6 @@
 use objc::runtime::{BOOL, YES};
+use std::mem::MaybeUninit;
 use std::os::raw::{c_int, c_ulonglong};
-
-mod padding;
 
 #[derive(Default)]
 #[repr(C)]
@@ -27,7 +26,6 @@ pub struct InnerStatus {
     schedule: Schedule,
     _disable_flags: c_ulonglong,
     _available: BOOL,
-    padding: padding::Padding,
 }
 
 #[derive(Default)]
@@ -35,15 +33,9 @@ pub struct BlueLightStatus {
     inner: InnerStatus,
 }
 
-impl InnerStatus {
-    pub fn overflowed_struct(&self) -> bool {
-        !self.padding.is_empty()
-    }
-}
-
 impl BlueLightStatus {
-    pub fn c_ptr() -> InnerStatus {
-        InnerStatus::default()
+    pub fn c_ptr() -> MaybeUninit<InnerStatus> {
+        MaybeUninit::zeroed()
     }
 
     pub fn sched_ptr(from: (u8, u8), to: (u8, u8)) -> Schedule {
@@ -60,9 +52,6 @@ impl BlueLightStatus {
     }
 
     pub fn new(inner: InnerStatus) -> BlueLightStatus {
-        if inner.overflowed_struct() {
-            eprintln!("Warning: Abnormalities detected. Is your macOS version very new?")
-        }
         BlueLightStatus { inner }
     }
 
