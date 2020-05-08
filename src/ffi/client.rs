@@ -20,7 +20,8 @@ impl CBBlueLightClient {
     }
 
     pub fn set_enabled(&self, enabled: bool) -> Result<(), String> {
-        let result: BOOL = unsafe { msg_send![*self.inner, setEnabled: (enabled as BOOL)] };
+        let enabled = Box::new(enabled as BOOL);
+        let result: BOOL = unsafe { msg_send![*self.inner, setEnabled: *enabled] };
         if result == YES {
             Ok(())
         } else {
@@ -28,8 +29,9 @@ impl CBBlueLightClient {
         }
     }
 
-    pub fn set_mode(&self, mode: u8) -> Result<(), String> {
-        let result: BOOL = unsafe { msg_send![*self.inner, setMode: mode as c_int] };
+    pub fn set_mode(&self, mode: c_int) -> Result<(), String> {
+        let mode = Box::new(mode);
+        let result: BOOL = unsafe { msg_send![*self.inner, setMode: *mode] };
 
         if result == YES {
             Ok(())
@@ -39,8 +41,8 @@ impl CBBlueLightClient {
     }
 
     pub fn set_schedule(&self, from: (u8, u8), to: (u8, u8)) -> Result<(), String> {
-        let ptr = BlueLightStatus::sched_ptr(from, to);
-        let result: BOOL = unsafe { msg_send![*self.inner, setSchedule: &ptr] };
+        let ptr = Box::new(BlueLightStatus::sched_ptr(from, to));
+        let result: BOOL = unsafe { msg_send![*self.inner, setSchedule: &*ptr] };
 
         if result == YES {
             Ok(())
@@ -50,7 +52,8 @@ impl CBBlueLightClient {
     }
 
     pub fn set_strength(&self, strength: c_float) -> Result<(), String> {
-        let result: BOOL = unsafe { msg_send![*self.inner, setStrength:strength commit:YES] };
+        let strength = Box::new(strength);
+        let result: BOOL = unsafe { msg_send![*self.inner, setStrength:*strength commit:YES] };
 
         if result == YES {
             Ok(())
@@ -60,9 +63,10 @@ impl CBBlueLightClient {
     }
 
     pub fn get_strength(&self) -> Result<i32, String> {
-        let mut value: c_float = -1.0;
-        let result: BOOL = unsafe { msg_send![*self.inner, getStrength: &mut value] };
+        let mut value = Box::new(-1.0 as c_float);
+        let result: BOOL = unsafe { msg_send![*self.inner, getStrength: &mut *value.as_mut()] };
 
+        let value = *value;
         if result == YES && value >= 0.0 {
             Ok((value * 100.0) as i32)
         } else {
@@ -71,8 +75,9 @@ impl CBBlueLightClient {
     }
 
     pub fn status(&self) -> Result<BlueLightStatus, String> {
-        let mut ptr = BlueLightStatus::c_ptr();
-        let result: BOOL = unsafe { msg_send![*self.inner, getBlueLightStatus: &mut ptr.as_mut()] };
+        let mut ptr = Box::new(BlueLightStatus::c_ptr());
+        let result: BOOL =
+            unsafe { msg_send![*self.inner, getBlueLightStatus: &mut *ptr.as_mut()] };
         if result == YES {
             Ok(BlueLightStatus::new(*ptr))
         } else {

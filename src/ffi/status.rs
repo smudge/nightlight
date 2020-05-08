@@ -36,8 +36,8 @@ pub struct BlueLightStatus {
 }
 
 impl BlueLightStatus {
-    pub fn c_ptr() -> Box<InnerStatus> {
-        Box::new(InnerStatus::default())
+    pub fn c_ptr() -> InnerStatus {
+        InnerStatus::default()
     }
 
     pub fn sched_ptr(from: (u8, u8), to: (u8, u8)) -> Schedule {
