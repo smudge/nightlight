@@ -2,6 +2,7 @@ use crate::ffi::BlueLightStatus;
 use objc::rc::StrongPtr;
 use objc::runtime::{Object, BOOL, YES};
 use objc::{class, msg_send, sel, sel_impl};
+use std::mem::MaybeUninit;
 use std::os::raw::{c_float, c_int};
 
 pub struct CBBlueLightClient {
@@ -59,11 +60,11 @@ impl CBBlueLightClient {
     }
 
     pub fn get_strength(&self) -> Result<i32, String> {
-        let mut value = Box::new(-1.0 as c_float);
-        let result: BOOL = unsafe { msg_send![*self.inner, getStrength: &mut *value.as_mut()] };
+        let mut ptr: MaybeUninit<c_float> = MaybeUninit::zeroed();
+        let result: BOOL = unsafe { msg_send![*self.inner, getStrength: &mut ptr] };
 
-        let value = *value;
-        if result == YES && value >= 0.0 {
+        let value = unsafe { ptr.assume_init() };
+        if result == YES && value >= 0.0 && value <= 1.0 {
             Ok((value * 100.0) as i32)
         } else {
             Err("Failed to get color temperature".to_string())
