@@ -2,7 +2,8 @@ use crate::ffi::BlueLightStatus;
 use objc::rc::StrongPtr;
 use objc::runtime::{Object, BOOL, YES};
 use objc::{class, msg_send, sel, sel_impl};
-use std::os::raw::c_int;
+use std::mem::MaybeUninit;
+use std::os::raw::{c_float, c_int};
 
 pub struct CBBlueLightClient {
     inner: StrongPtr,
@@ -10,17 +11,14 @@ pub struct CBBlueLightClient {
 
 impl CBBlueLightClient {
     pub fn new() -> CBBlueLightClient {
-        let client_class = class!(CBBlueLightClient);
-        let client = unsafe {
-            let obj: *mut Object = msg_send![client_class, alloc];
-            let obj: *mut Object = msg_send![obj, init];
-            StrongPtr::new(obj)
-        };
-        CBBlueLightClient { inner: client }
+        CBBlueLightClient {
+            inner: CBBlueLightClient::client(),
+        }
     }
 
     pub fn set_enabled(&self, enabled: bool) -> Result<(), String> {
-        let result: BOOL = unsafe { msg_send![*self.inner, setEnabled: (enabled as BOOL)] };
+        let enabled = Box::new(enabled as BOOL);
+        let result: BOOL = unsafe { msg_send![*self.inner, setEnabled: *enabled] };
         if result == YES {
             Ok(())
         } else {
@@ -28,8 +26,9 @@ impl CBBlueLightClient {
         }
     }
 
-    pub fn set_mode(&self, mode: u8) -> Result<(), String> {
-        let result: BOOL = unsafe { msg_send![*self.inner, setMode: mode as c_int] };
+    pub fn set_mode(&self, mode: c_int) -> Result<(), String> {
+        let mode = Box::new(mode);
+        let result: BOOL = unsafe { msg_send![*self.inner, setMode: *mode] };
 
         if result == YES {
             Ok(())
@@ -39,8 +38,8 @@ impl CBBlueLightClient {
     }
 
     pub fn set_schedule(&self, from: (u8, u8), to: (u8, u8)) -> Result<(), String> {
-        let ptr = BlueLightStatus::sched_ptr(from, to);
-        let result: BOOL = unsafe { msg_send![*self.inner, setSchedule: &ptr] };
+        let ptr = Box::new(BlueLightStatus::sched_ptr(from, to));
+        let result: BOOL = unsafe { msg_send![*self.inner, setSchedule: &*ptr] };
 
         if result == YES {
             Ok(())
@@ -49,8 +48,9 @@ impl CBBlueLightClient {
         }
     }
 
-    pub fn set_strength(&self, strength: f32) -> Result<(), String> {
-        let result: BOOL = unsafe { msg_send![*self.inner, setStrength:strength commit:YES] };
+    pub fn set_strength(&self, strength: c_float) -> Result<(), String> {
+        let strength = Box::new(strength);
+        let result: BOOL = unsafe { msg_send![*self.inner, setStrength:*strength commit:YES] };
 
         if result == YES {
             Ok(())
@@ -60,10 +60,11 @@ impl CBBlueLightClient {
     }
 
     pub fn get_strength(&self) -> Result<i32, String> {
-        let mut value: f32 = -1.0;
-        let result: BOOL = unsafe { msg_send![*self.inner, getStrength: &mut value] };
+        let mut ptr: MaybeUninit<c_float> = MaybeUninit::uninit();
+        let result: BOOL = unsafe { msg_send![*self.inner, getStrength: &mut ptr] };
 
-        if result == YES && value >= 0.0 {
+        let value = unsafe { ptr.assume_init() };
+        if result == YES && value >= 0.0 && value <= 1.0 {
             Ok((value * 100.0) as i32)
         } else {
             Err("Failed to get color temperature".to_string())
@@ -74,9 +75,18 @@ impl CBBlueLightClient {
         let mut ptr = BlueLightStatus::c_ptr();
         let result: BOOL = unsafe { msg_send![*self.inner, getBlueLightStatus: &mut ptr] };
         if result == YES {
-            Ok(BlueLightStatus::new(ptr))
+            Ok(BlueLightStatus::new(unsafe { ptr.assume_init() }))
         } else {
             Err("Failed to get status".to_string())
+        }
+    }
+
+    fn client() -> StrongPtr {
+        let client_class = class!(CBBlueLightClient);
+        unsafe {
+            let obj: *mut Object = msg_send![client_class, alloc];
+            let obj: *mut Object = msg_send![obj, init];
+            StrongPtr::new(obj)
         }
     }
 }

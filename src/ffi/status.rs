@@ -1,7 +1,6 @@
 use objc::runtime::{BOOL, YES};
-use std::os::raw::c_int;
-
-mod padding;
+use std::mem::MaybeUninit;
+use std::os::raw::{c_int, c_ulonglong};
 
 #[derive(Default)]
 #[repr(C)]
@@ -25,9 +24,8 @@ pub struct InnerStatus {
     _sun_schedule_permitted: BOOL,
     mode: c_int,
     schedule: Schedule,
-    _disable_flags: u64,
+    _disable_flags: c_ulonglong,
     _available: BOOL,
-    padding: padding::Padding,
 }
 
 #[derive(Default)]
@@ -36,8 +34,8 @@ pub struct BlueLightStatus {
 }
 
 impl BlueLightStatus {
-    pub fn c_ptr() -> InnerStatus {
-        InnerStatus::default()
+    pub fn c_ptr() -> MaybeUninit<InnerStatus> {
+        MaybeUninit::uninit()
     }
 
     pub fn sched_ptr(from: (u8, u8), to: (u8, u8)) -> Schedule {
@@ -54,13 +52,6 @@ impl BlueLightStatus {
     }
 
     pub fn new(inner: InnerStatus) -> BlueLightStatus {
-        if !inner.padding.is_empty() {
-            eprintln!(
-                "======== \
-                \nWarning: Your version of macOS may be new, resulting in unexpected behavior. \
-                \n========"
-            )
-        }
         BlueLightStatus { inner }
     }
 
