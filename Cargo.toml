@@ -10,6 +10,8 @@ readme = "README.md"
 license = "MIT"
 
 [dependencies]
+time = "0.2.10"
+
+[target.'cfg(macos)'.dependencies]
 objc = "0.2"
 objc-foundation = "0.1.1"
-time = "0.2.10"
