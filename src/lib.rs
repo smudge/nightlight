@@ -1,4 +1,6 @@
-mod ffi;
+#[cfg_attr(target_os = "linux", path = "linux/mod.rs")]
+#[cfg_attr(target_os = "macos", path = "macos/mod.rs")]
+mod os;
 mod schedule;
 mod status;
 
@@ -6,13 +8,13 @@ pub use schedule::{Schedule, Time};
 pub use status::Status;
 
 pub struct NightLight {
-    client: ffi::CBBlueLightClient,
+    client: os::CBBlueLightClient,
 }
 
 impl NightLight {
     pub fn new() -> NightLight {
         NightLight {
-            client: ffi::CBBlueLightClient::new(),
+            client: os::CBBlueLightClient::new(),
         }
     }
 
@@ -46,8 +48,12 @@ impl NightLight {
     }
 
     pub fn get_schedule(&self) -> Result<Schedule, String> {
-        let status = self.client.status()?;
-        NightLight::schedule(status.mode(), status.from_time(), status.to_time())
+        let (from_time, to_time) = self.client.get_schedule()?;
+        NightLight::schedule(
+            self.client.get_mode()?,
+            from_time,
+            to_time,
+        )
     }
 
     pub fn set_temp(&self, temp: i32) -> Result<(), String> {
@@ -63,7 +69,7 @@ impl NightLight {
     }
 
     pub fn status(&self) -> Result<Status, String> {
-        Ok(match self.client.status()?.enabled() {
+        Ok(match self.client.get_enabled()? {
             true => Status::On,
             false => Status::Off,
         })
