@@ -7,6 +7,6 @@ mod client;
 mod locale;
 mod status;
 
-pub use self::client::CBBlueLightClient;
+pub use self::client::Client;
 pub use self::locale::Locale;
 pub use self::status::BlueLightStatus;

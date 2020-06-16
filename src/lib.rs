@@ -8,13 +8,13 @@ pub use schedule::{Schedule, Time};
 pub use status::Status;
 
 pub struct NightLight {
-    client: os::CBBlueLightClient,
+    client: os::Client,
 }
 
 impl NightLight {
     pub fn new() -> NightLight {
         NightLight {
-            client: os::CBBlueLightClient::new(),
+            client: os::Client::new(),
         }
     }
 

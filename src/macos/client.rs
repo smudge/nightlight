@@ -5,14 +5,14 @@ use objc::{class, msg_send, sel, sel_impl};
 use std::mem::MaybeUninit;
 use std::os::raw::{c_float, c_int};
 
-pub struct CBBlueLightClient {
+pub struct Client {
     inner: StrongPtr,
 }
 
-impl CBBlueLightClient {
-    pub fn new() -> CBBlueLightClient {
-        CBBlueLightClient {
-            inner: CBBlueLightClient::client(),
+impl Client {
+    pub fn new() -> Client {
+        Client {
+            inner: Client::client(),
         }
     }
 

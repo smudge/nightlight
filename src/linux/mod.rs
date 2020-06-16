@@ -4,11 +4,11 @@ mod locale;
 
 pub use self::locale::Locale;
 
-pub struct CBBlueLightClient {}
+pub struct Client {}
 
-impl CBBlueLightClient {
-    pub fn new() -> CBBlueLightClient {
-        CBBlueLightClient {}
+impl Client {
+    pub fn new() -> Client {
+        Client {}
     }
 
     pub fn set_enabled(&self, enabled: bool) -> Result<(), String> {
