@@ -76,7 +76,7 @@ impl CBBlueLightClient {
     }
 
     pub fn get_mode(&self) -> Result<i32, String> {
-        ok(self.status()?.mode())
+        Ok(self.status()?.mode())
     }
 
     pub fn get_schedule(&self) -> Result<((u8, u8), (u8, u8)), String> {
