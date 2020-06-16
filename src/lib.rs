@@ -49,11 +49,7 @@ impl NightLight {
 
     pub fn get_schedule(&self) -> Result<Schedule, String> {
         let (from_time, to_time) = self.client.get_schedule()?;
-        NightLight::schedule(
-            self.client.get_mode()?,
-            from_time,
-            to_time,
-        )
+        NightLight::schedule(self.client.get_mode()?, from_time, to_time)
     }
 
     pub fn set_temp(&self, temp: i32) -> Result<(), String> {

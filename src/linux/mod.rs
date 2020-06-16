@@ -1,17 +1,14 @@
-use std::os::raw::{c_int, c_float};
+use std::os::raw::{c_float, c_int};
 
 mod locale;
 
 pub use self::locale::Locale;
 
-pub struct CBBlueLightClient {
-}
+pub struct CBBlueLightClient {}
 
 impl CBBlueLightClient {
     pub fn new() -> CBBlueLightClient {
-        CBBlueLightClient {
-
-        }
+        CBBlueLightClient {}
     }
 
     pub fn set_enabled(&self, enabled: bool) -> Result<(), String> {
