@@ -1,18 +1,28 @@
+extern crate gio;
+
+use gio::SettingsExt;
 use std::os::raw::{c_float, c_int};
 
 mod locale;
 
 pub use self::locale::Locale;
 
-pub struct Client {}
+pub struct Client {
+    settings: gio::Settings,
+}
 
 impl Client {
     pub fn new() -> Client {
-        Client {}
+        Client {
+            settings: gio::Settings::new("org.gnome.settings-daemon.plugins.color"),
+        }
     }
 
     pub fn set_enabled(&self, enabled: bool) -> Result<(), String> {
-        Ok(())
+        match self.settings.set_boolean("night-light-enabled", enabled) {
+            Ok(_) => Ok(()),
+            Err(_) => Err(format!("Failed to set enabled to {}", enabled).to_string()),
+        }
     }
 
     pub fn set_mode(&self, mode: c_int) -> Result<(), String> {
@@ -32,7 +42,7 @@ impl Client {
     }
 
     pub fn get_enabled(&self) -> Result<bool, String> {
-        Ok(false)
+        Ok(self.settings.get_boolean("night-light-enabled"))
     }
 
     pub fn get_mode(&self) -> Result<i32, String> {

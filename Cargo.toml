@@ -12,7 +12,9 @@ license = "MIT"
 [dependencies]
 time = "0.2.10"
 
-
 [target.'cfg(target_os = "macos")'.dependencies]
 objc = "0.2"
 objc-foundation = "0.1.1"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+gio = "0.8.1"
