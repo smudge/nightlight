@@ -34,11 +34,21 @@ impl Client {
     }
 
     pub fn set_strength(&self, strength: c_float) -> Result<(), String> {
-        Ok(())
+        let ratio = strength / 100.0;
+        let kelvins = (1.0 - ratio) * (6000.0 - 3500.0) + 3500.0;
+        match self
+            .settings
+            .set_uint("night-light-temperature", kelvins as u32)
+        {
+            Ok(_) => Ok(()),
+            Err(_) => Err("Unable to set temperature".to_string()),
+        }
     }
 
     pub fn get_strength(&self) -> Result<i32, String> {
-        Ok(100)
+        let kelvins = self.settings.get_uint("night-light-temperature");
+        let ratio = 1.0 - (kelvins as f64 - 3500.0) / (6000.0 - 3500.0);
+        Ok((ratio * 100.0) as i32)
     }
 
     pub fn get_enabled(&self) -> Result<bool, String> {
