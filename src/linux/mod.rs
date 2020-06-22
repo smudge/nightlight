@@ -30,7 +30,15 @@ impl Client {
     }
 
     pub fn set_schedule(&self, from: (u8, u8), to: (u8, u8)) -> Result<(), String> {
-        Ok(())
+        let from = from.0 as f64 + (from.1 as f64 / 60.0);
+        let to = to.0 as f64 + (to.1 as f64 / 60.0);
+        match self.settings.set_double("night-light-schedule-from", from) {
+            Ok(_) => match self.settings.set_double("night-light-schedule-to", to) {
+                Ok(_) => Ok(()),
+                Err(_) => Err("Unable to set schedule!".to_string()),
+            },
+            Err(_) => Err("Unable to set schedule!".to_string()),
+        }
     }
 
     pub fn set_strength(&self, strength: c_float) -> Result<(), String> {
@@ -60,6 +68,11 @@ impl Client {
     }
 
     pub fn get_schedule(&self) -> Result<((u8, u8), (u8, u8)), String> {
-        Ok(((0, 0), (1, 1)))
+        let from = self.settings.get_double("night-light-schedule-from");
+        let to = self.settings.get_double("night-light-schedule-to");
+        Ok((
+            (from.trunc() as u8, (from.fract() * 60.0).round() as u8),
+            (to.trunc() as u8, (to.fract() * 60.0).round() as u8),
+        ))
     }
 }
