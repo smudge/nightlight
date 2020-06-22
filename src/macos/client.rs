@@ -1,18 +1,18 @@
-use crate::ffi::BlueLightStatus;
+use crate::os::BlueLightStatus;
 use objc::rc::StrongPtr;
 use objc::runtime::{Object, BOOL, YES};
 use objc::{class, msg_send, sel, sel_impl};
 use std::mem::MaybeUninit;
 use std::os::raw::{c_float, c_int};
 
-pub struct CBBlueLightClient {
+pub struct Client {
     inner: StrongPtr,
 }
 
-impl CBBlueLightClient {
-    pub fn new() -> CBBlueLightClient {
-        CBBlueLightClient {
-            inner: CBBlueLightClient::client(),
+impl Client {
+    pub fn new() -> Client {
+        Client {
+            inner: Client::client(),
         }
     }
 
@@ -71,7 +71,19 @@ impl CBBlueLightClient {
         }
     }
 
-    pub fn status(&self) -> Result<BlueLightStatus, String> {
+    pub fn get_enabled(&self) -> Result<bool, String> {
+        Ok(self.status()?.enabled())
+    }
+
+    pub fn get_mode(&self) -> Result<i32, String> {
+        Ok(self.status()?.mode())
+    }
+
+    pub fn get_schedule(&self) -> Result<((u8, u8), (u8, u8)), String> {
+        Ok((self.status()?.from_time(), self.status()?.to_time()))
+    }
+
+    fn status(&self) -> Result<BlueLightStatus, String> {
         let mut ptr = BlueLightStatus::c_ptr();
         let result: BOOL = unsafe { msg_send![*self.inner, getBlueLightStatus: &mut ptr] };
         if result == YES {

@@ -1,6 +1,6 @@
 extern crate time;
 
-use crate::ffi::Locale;
+use crate::os::Locale;
 use std::fmt;
 
 pub struct Time {
