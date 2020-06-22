@@ -190,7 +190,7 @@ dependencies = [
 
 [[package]]
 name = "nightlight"
-version = "0.1.1"
+version = "0.2.0"
 dependencies = [
  "gio 0.8.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "objc 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)",
