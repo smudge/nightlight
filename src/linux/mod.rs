@@ -20,15 +20,15 @@ impl Client {
 
     pub fn set_enabled(&self, enabled: bool) -> Result<(), String> {
         match self.settings.set_boolean("night-light-enabled", enabled) {
-            Ok(_) => Ok(()),
+            Ok(_) => Ok(gio::Settings::sync()),
             Err(_) => Err(format!("Failed to set enabled to {}", enabled).to_string()),
         }
     }
 
     pub fn set_mode(&self, mode: c_int) -> Result<(), String> {
         let (enabled, scheduled) = match mode {
-            1 => (true, false),
-            2 => (true, true),
+            1 => (true, true),
+            2 => (true, false),
             _ => (false, false),
         };
 
@@ -37,7 +37,7 @@ impl Client {
             .settings
             .set_boolean("night-light-schedule-automatic", scheduled)
         {
-            Ok(_) => Ok(()),
+            Ok(_) => Ok(gio::Settings::sync()),
             Err(_) => Err("Unable to set schedule!".to_string()),
         }
     }
@@ -47,7 +47,7 @@ impl Client {
         let to = to.0 as f64 + (to.1 as f64 / 60.0);
         match self.settings.set_double("night-light-schedule-from", from) {
             Ok(_) => match self.settings.set_double("night-light-schedule-to", to) {
-                Ok(_) => Ok(()),
+                Ok(_) => Ok(gio::Settings::sync()),
                 Err(_) => Err("Unable to set schedule!".to_string()),
             },
             Err(_) => Err("Unable to set schedule!".to_string()),
@@ -61,7 +61,7 @@ impl Client {
             .settings
             .set_uint("night-light-temperature", kelvins as u32)
         {
-            Ok(_) => Ok(()),
+            Ok(_) => Ok(gio::Settings::sync()),
             Err(_) => Err("Unable to set temperature".to_string()),
         }
     }
