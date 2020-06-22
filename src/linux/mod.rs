@@ -26,7 +26,20 @@ impl Client {
     }
 
     pub fn set_mode(&self, mode: c_int) -> Result<(), String> {
-        Ok(())
+        let (enabled, scheduled) = match mode {
+            1 => (true, false),
+            2 => (true, true),
+            _ => (false, false),
+        };
+
+        self.set_enabled(enabled)?;
+        match self
+            .settings
+            .set_boolean("night-light-schedule-automatic", scheduled)
+        {
+            Ok(_) => Ok(()),
+            Err(_) => Err("Unable to set schedule!".to_string()),
+        }
     }
 
     pub fn set_schedule(&self, from: (u8, u8), to: (u8, u8)) -> Result<(), String> {
@@ -64,7 +77,14 @@ impl Client {
     }
 
     pub fn get_mode(&self) -> Result<i32, String> {
-        Ok(0)
+        match (
+            self.get_enabled()?,
+            self.settings.get_boolean("night-light-schedule-automatic"),
+        ) {
+            (true, true) => Ok(1),
+            (true, false) => Ok(2),
+            (false, _) => Ok(0),
+        }
     }
 
     pub fn get_schedule(&self) -> Result<((u8, u8), (u8, u8)), String> {
