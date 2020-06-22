@@ -54,8 +54,7 @@ impl Client {
         }
     }
 
-    pub fn set_strength(&self, strength: c_float) -> Result<(), String> {
-        let ratio = strength / 100.0;
+    pub fn set_strength(&self, ratio: f32) -> Result<(), String> {
         let kelvins = (1.0 - ratio) * (6000.0 - 3500.0) + 3500.0;
         match self
             .settings
