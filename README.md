@@ -20,8 +20,7 @@ This `nightlight` CLI aims to enable such access via a few simple commands.
 ### via Homebrew
 
 ```
-brew tap smudge/smudge
-brew install nightlight
+brew install smudge/smudge/nightlight
 ```
 
 ### via Cargo
