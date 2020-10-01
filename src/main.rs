@@ -8,17 +8,17 @@ fn print_usage(program: &String) {
     println!("usage:\n  {} [--help] <command> [<args>]\n", program);
     println!("Available Commands By Category:");
     println!("\nmanual on/off control:");
-    println!("  on                      Turn Night Shift on (until scheduled stop)");
-    println!("  off                     Turn Night Shift off (until scheduled start)");
-    println!("  status                  View current on/off status");
+    println!("  on                       Turn Night Shift on (until scheduled stop)");
+    println!("  off                      Turn Night Shift off (until scheduled start)");
+    println!("  status                   View current on/off status");
     println!("\ncolor temperature:");
-    println!("  temp                    View temperature preference");
-    println!("  temp <0-100>            Set temperature preference (does not affect on/off)");
+    println!("  temp                     View temperature preference");
+    println!("  temp <0-100|3500K-6500K> Set temperature preference (does not affect on/off)");
     println!("\nautomated schedule:");
-    println!("  schedule                View the current schedule");
-    println!("  schedule start          Start schedule from sunset to sunrise");
-    println!("  schedule <from> <to>    Start a custom schedule (12 or 24-hour time format)");
-    println!("  schedule stop           Stop the current schedule");
+    println!("  schedule                 View the current schedule");
+    println!("  schedule start           Start schedule from sunset to sunrise");
+    println!("  schedule <from> <to>     Start a custom schedule (12 or 24-hour time format)");
+    println!("  schedule stop            Stop the current schedule");
 }
 
 fn print_status(client: NightLight) -> Result<(), String> {
@@ -72,10 +72,36 @@ fn main() {
             Err(e) => error(e),
         }
     } else if args.len() == 3 && args[1] == "temp" {
-        let temp = args[2].parse().unwrap_or(-1);
+        let temp = temp_userinput(args[2].clone());
         client.set_temp(temp).unwrap_or_else(|e| error(e));
     } else {
         print_usage(&args[0]);
+    }
+}
+
+fn temp_userinput(input: String) -> i32 {
+    if let Some(temp) = input.parse().ok() {
+        temp
+    } else {
+        const KELVIN_LOWER: f64 = 3500.0;
+        const KELVIN_UPPER: f64 = 6000.0;
+
+        if input.to_ascii_uppercase().ends_with("K") {
+            match input[..(input.len() - 1)].parse::<f64>().ok() {
+                Some(kelvin_input) => {
+                    // Map kelvin value to 0-100
+                    if kelvin_input < KELVIN_LOWER || kelvin_input > KELVIN_UPPER {
+                        -1
+                    }
+                    else {
+                        (((kelvin_input - KELVIN_LOWER) / (KELVIN_UPPER - KELVIN_LOWER)) * 100.0) as i32
+                    }
+                }
+                None => -1,
+            }
+        } else {
+            -1
+        }
     }
 }
 
