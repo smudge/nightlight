@@ -11,6 +11,7 @@ fn print_usage(program: &String) {
     println!("  on                       Turn Night Shift on (until scheduled stop)");
     println!("  off                      Turn Night Shift off (until scheduled start)");
     println!("  status                   View current on/off status");
+    println!("  toggle                   Toggle on/off status");
     println!("\ncolor temperature:");
     println!("  temp                     View temperature preference");
     println!("  temp <0-100|3500K-6500K> Set temperature preference (does not affect on/off)");
@@ -36,6 +37,15 @@ fn print_status(client: NightLight) -> Result<(), String> {
     Ok(println!("{}{}", status, off_at))
 }
 
+fn toggle(client: NightLight) -> Result<(), String> {
+    let status = client.status()?;
+
+    match status {
+        Status::On => client.off(),
+        Status::Off => client.on(),
+    }
+}
+
 fn main() {
     let args: Vec<String> = args().collect();
 
@@ -49,6 +59,8 @@ fn main() {
         client.on().unwrap_or_else(|e| error(e));
     } else if args.len() == 2 && args[1] == "off" {
         client.off().unwrap_or_else(|e| error(e));
+    } else if args.len() == 2 && args[1] == "toggle" {
+        toggle(client).unwrap_or_else(|e| error(e));
     } else if args.len() == 2 && args[1] == "schedule" {
         match client.get_schedule() {
             Ok(schedule) => println!("{}", schedule),
