@@ -58,6 +58,12 @@ View current on/off status:
 nightlight status
 ```
 
+Toggle on or off based on current status:
+
+```
+nightlight toggle
+```
+
 #### Controlling the Temperature:
 
 View current temperature setting:
