@@ -58,6 +58,12 @@ View current on/off status:
 nightlight status
 ```
 
+Toggle on or off based on current status:
+
+```
+nightlight toggle
+```
+
 #### Controlling the Temperature:
 
 View current temperature setting:
@@ -104,7 +110,7 @@ nightlight schedule off
 In addition to a CLI, `nightlight` can be pulled-in as a dependency for other Rust crates:
 
 ```
-nightlight = "0.2.0"
+nightlight = "0.3.0"
 ```
 
 Here's an example `fn` that toggles Night Shift off,
