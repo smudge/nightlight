@@ -147,12 +147,12 @@ fn main() {
 - [X] Make time display as properly-formatted 12-hour time
 - [X] Use system config for time parse/format (12 vs 24).
 - [X] API improvements
+- [X] Other release mechanisms (like `brew`)
 - [ ] Consider command outputs: concise, human-readable, machine-parsable.
 - [ ] Full lib documentation
 - [ ] Test coverage of schedule/time parsing.
 - [ ] Tests that use fake/stub ObjC library.
 - [ ] Support for "Automatically adjust brightness" feature.
-- [X] Other release mechanisms (like `brew`)
 - [ ] Cross-platform support (e.g. Windows' "Night Light")
 
 ## Contributing
