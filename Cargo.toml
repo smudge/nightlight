@@ -1,20 +1,23 @@
 [package]
 name = "nightlight"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["smudge <nathan@ngriffith.com>"]
-edition = "2018"
+edition = "2024"
 categories = ["command-line-utilities", "os::macos-apis"]
 description = "A CLI for configuring 'Night Shift' on macOS 🌕🌖🌗🌘🌑"
 repository = "https://github.com/smudge/nightlight"
 readme = "README.md"
 license = "MIT"
 
+[features] # required to fix unexpected `cfg` condition value
+cargo-clippy = []
+
 [dependencies]
-time = "0.2.10"
+time = "0.2.27" # v0.3.41 is available
 
 [target.'cfg(target_os = "macos")'.dependencies]
-objc = "0.2"
+objc = "0.2.7"
 objc-foundation = "0.1.1"
 
 [target.'cfg(target_os = "linux")'.dependencies]
-gio = "0.8.1"
+gio = "0.8.1" # v0.20.9 is available
