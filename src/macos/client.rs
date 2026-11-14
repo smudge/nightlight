@@ -63,8 +63,12 @@ impl Client {
         let mut ptr: MaybeUninit<c_float> = MaybeUninit::uninit();
         let result: BOOL = unsafe { msg_send![*self.inner, getStrength: &mut ptr] };
 
+        if result != YES {
+            return Err("Failed to get color temperature".to_string());
+        }
+
         let value = unsafe { ptr.assume_init() };
-        if result == YES && value >= 0.0 && value <= 1.0 {
+        if (0.0..=1.0).contains(&value) {
             Ok((value * 100.0) as i32)
         } else {
             Err("Failed to get color temperature".to_string())
