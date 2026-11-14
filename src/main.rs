@@ -50,46 +50,35 @@ fn toggle(client: NightLight) -> Result<(), String> {
 
 fn main() {
     let args: Vec<String> = args().collect();
+    let command: Vec<&str> = args.iter().skip(1).map(String::as_str).collect();
 
-    let client = NightLight::new();
-    if args.len() == 1 {
-        toggle(client).unwrap_or_else(|e| error(e));
-    } else if args.len() == 2 && args[1] == "on" {
-        client.on().unwrap_or_else(|e| error(e));
-    } else if args.len() == 2 && args[1] == "off" {
-        client.off().unwrap_or_else(|e| error(e));
-    } else if args.len() == 2 && args[1] == "toggle" {
-        toggle(client).unwrap_or_else(|e| error(e));
-    } else if args.len() == 2 && args[1] == "schedule" {
-        match client.get_schedule() {
-            Ok(schedule) => println!("{}", schedule),
-            Err(e) => error(e),
+    let result = match command.as_slice() {
+        ["help" | "-h" | "--help"] => {
+            print_usage(&args[0]);
+            Ok(())
         }
-    } else if args.len() == 3 && args[1] == "schedule" && args[2] == "start" {
-        client
-            .set_schedule(Schedule::SunsetToSunrise)
-            .unwrap_or_else(|e| error(e));
-    } else if args.len() == 4 && args[1] == "schedule" {
-        set_custom_schedule(client, &args[2], &args[3]).unwrap_or_else(|e| error(e));
-    } else if args.len() == 3 && args[1] == "schedule" && args[2] == "stop" {
-        client
-            .set_schedule(Schedule::Off)
-            .unwrap_or_else(|e| error(e));
-    } else if args.len() == 2 && args[1] == "status" {
-        print_status(client).unwrap_or_else(|e| error(e))
-    } else if args.len() == 2 && args[1] == "temp" {
-        match client.get_temp() {
-            Ok(temp) => println!("{}", temp),
-            Err(e) => error(e),
-        }
-    } else if args.len() == 3 && args[1] == "temp" {
-        let temp = temp_userinput(args[2].clone());
-        client.set_temp(temp).unwrap_or_else(|e| error(e));
-    } else if args.len() == 2 && args[1] == "help" {
-        print_usage(&args[0]);
-    } else {
-        print_usage(&args[0]);
-    }
+        [] | ["toggle"] => toggle(NightLight::new()),
+        ["on"] => NightLight::new().on(),
+        ["off"] => NightLight::new().off(),
+        ["status"] => print_status(NightLight::new()),
+        ["schedule"] => NightLight::new()
+            .get_schedule()
+            .map(|schedule| println!("{}", schedule)),
+        ["schedule", "start"] => NightLight::new().set_schedule(Schedule::SunsetToSunrise),
+        ["schedule", "stop"] => NightLight::new().set_schedule(Schedule::Off),
+        ["schedule", from, to] => set_custom_schedule(
+            NightLight::new(),
+            &from.to_string(),
+            &to.to_string(),
+        ),
+        ["temp"] => NightLight::new()
+            .get_temp()
+            .map(|temp| println!("{}", temp)),
+        ["temp", value] => NightLight::new().set_temp(temp_userinput(value.to_string())),
+        _ => Err(format!("Invalid arguments. Run '{} --help' for usage.", args[0])),
+    };
+
+    result.unwrap_or_else(|e| error(e));
 }
 
 fn temp_userinput(input: String) -> i32 {
