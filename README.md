@@ -58,13 +58,18 @@ View current on/off status:
 nightlight status
 ```
 
-For machine-readable status and schedule information:
+For machine-readable output, add `--json` to **any command**, before, within, or after the command arguments:
 
 ```bash
-nightlight status --json
+nightlight --json status
+nightlight temp --json
+nightlight --json temp 70
+nightlight schedule 7:45pm 6am --json
 ```
 
-The JSON includes `status` (`on` or `off`) and a `schedule` object. Custom schedules include `from` and `to` in 24-hour `HH:MM` format.
+Reads return typed JSON objects: `status` includes a `status` string and `schedule` object; `temp` returns `{"temperature":70}`; and `schedule` returns its configuration. Custom schedules have `from` and `to` in 24-hour `HH:MM` format. Successful updates return an object with `ok: true`, `command`, and `value`. Errors return JSON on stderr with `ok: false` and `error`, and retain a nonzero exit status.
+
+Without `--json`, commands retain their usual human-readable output.
 
 Toggle on or off based on current status:
 

@@ -13,6 +13,7 @@ license = "MIT"
 cargo-clippy = []
 
 [dependencies]
+serde_json = "1"
 time = "0.2.27" # v0.3.41 is available
 
 [target.'cfg(target_os = "macos")'.dependencies]
