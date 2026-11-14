@@ -229,6 +229,7 @@ dependencies = [
  "gio",
  "objc",
  "objc-foundation",
+ "serde_json",
  "time",
 ]
 
