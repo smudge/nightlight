@@ -39,12 +39,22 @@ impl NightLight {
         #[cfg(target_os = "macos")]
         let status = self.status()?;
 
+        #[cfg(target_os = "macos")]
         match schedule {
             Schedule::Off => self.client.set_mode(0)?,
             Schedule::SunsetToSunrise => self.client.set_mode(1)?,
             Schedule::Custom(from, to) => {
                 self.client.set_mode(2)?;
                 self.client.set_schedule(from.tuple(), to.tuple())?
+            }
+        }
+
+        #[cfg(target_os = "linux")]
+        match schedule {
+            Schedule::Off => self.client.set_schedule_mode(0, None)?,
+            Schedule::SunsetToSunrise => self.client.set_schedule_mode(1, None)?,
+            Schedule::Custom(from, to) => {
+                self.client.set_schedule_mode(2, Some((from.tuple(), to.tuple())))?
             }
         }
 
