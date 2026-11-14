@@ -7,6 +7,22 @@ mod locale;
 
 pub use self::locale::Locale;
 
+fn mode_settings(mode: i32) -> (bool, bool) {
+    match mode {
+        1 => (true, true),
+        2 => (true, false),
+        _ => (false, false),
+    }
+}
+
+fn mode_from_settings(enabled: bool, automatic: bool) -> i32 {
+    match (enabled, automatic) {
+        (true, true) => 1,
+        (true, false) => 2,
+        (false, _) => 0,
+    }
+}
+
 pub struct Client {
     settings: gio::Settings,
 }
@@ -26,11 +42,7 @@ impl Client {
     }
 
     pub fn set_mode(&self, mode: c_int) -> Result<(), String> {
-        let (enabled, scheduled) = match mode {
-            1 => (true, true),
-            2 => (true, false),
-            _ => (false, false),
-        };
+        let (enabled, scheduled) = mode_settings(mode);
 
         self.set_enabled(enabled)?;
         match self
@@ -76,14 +88,10 @@ impl Client {
     }
 
     pub fn get_mode(&self) -> Result<i32, String> {
-        match (
+        Ok(mode_from_settings(
             self.get_enabled()?,
             self.settings.get_boolean("night-light-schedule-automatic"),
-        ) {
-            (true, true) => Ok(1),
-            (true, false) => Ok(2),
-            (false, _) => Ok(0),
-        }
+        ))
     }
 
     pub fn get_schedule(&self) -> Result<((u8, u8), (u8, u8)), String> {
@@ -93,5 +101,31 @@ impl Client {
             (from.trunc() as u8, (from.fract() * 60.0).round() as u8),
             (to.trunc() as u8, (to.fract() * 60.0).round() as u8),
         ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{mode_from_settings, mode_settings};
+
+    #[test]
+    fn every_schedule_mode_round_trips() {
+        for mode in [0, 1, 2] {
+            let (enabled, automatic) = mode_settings(mode);
+            assert_eq!(mode_from_settings(enabled, automatic), mode);
+        }
+    }
+
+    #[test]
+    fn disabled_night_light_is_not_reported_as_custom() {
+        assert_eq!(mode_from_settings(false, false), 0);
+        assert_eq!(mode_from_settings(false, true), 0);
+        assert_eq!(mode_from_settings(true, false), 2);
+        assert_eq!(mode_from_settings(true, true), 1);
+    }
+
+    #[test]
+    fn stopping_schedule_disables_night_light() {
+        assert_eq!(mode_settings(0), (false, false));
     }
 }

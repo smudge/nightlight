@@ -34,6 +34,9 @@ impl NightLight {
     }
 
     pub fn set_schedule(&self, schedule: Schedule) -> Result<(), String> {
+        // macOS allows a schedule to change independently of the current on/off state.
+        // On GNOME, "night-light-enabled" is part of the schedule configuration.
+        #[cfg(target_os = "macos")]
         let status = self.status()?;
 
         match schedule {
@@ -44,7 +47,15 @@ impl NightLight {
                 self.client.set_schedule(from.tuple(), to.tuple())?
             }
         }
-        self.toggle(status)
+
+        #[cfg(target_os = "macos")]
+        {
+            self.toggle(status)
+        }
+        #[cfg(target_os = "linux")]
+        {
+            Ok(())
+        }
     }
 
     pub fn get_schedule(&self) -> Result<Schedule, String> {
