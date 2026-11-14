@@ -72,14 +72,54 @@ impl NightLight {
     }
 
     fn schedule(mode: i32, from: (u8, u8), to: (u8, u8)) -> Result<Schedule, String> {
-        let from = Time::from_tuple(from)?;
-        let to = Time::from_tuple(to)?;
-
         match mode {
             0 => Ok(Schedule::Off),
-            2 => Ok(Schedule::Custom(from, to)),
             1 => Ok(Schedule::SunsetToSunrise),
+            2 => Ok(Schedule::Custom(Time::from_tuple(from)?, Time::from_tuple(to)?)),
             _ => Err("Unrecognized schedule type".to_string()),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{NightLight, Schedule};
+
+    #[test]
+    fn non_custom_schedules_ignore_invalid_stored_times() {
+        let invalid = (255, 255);
+        assert!(matches!(
+            NightLight::schedule(0, invalid, invalid),
+            Ok(Schedule::Off)
+        ));
+        assert!(matches!(
+            NightLight::schedule(1, invalid, invalid),
+            Ok(Schedule::SunsetToSunrise)
+        ));
+    }
+
+    #[test]
+    fn custom_schedule_requires_valid_times() {
+        let from = (8, 30);
+        let to = (22, 15);
+
+        match NightLight::schedule(2, from, to).unwrap() {
+            Schedule::Custom(start, end) => {
+                assert_eq!(start.tuple(), from);
+                assert_eq!(end.tuple(), to);
+            }
+            _ => panic!("Expected custom schedule"),
+        }
+
+        assert!(NightLight::schedule(2, (24, 0), to).is_err());
+        assert!(NightLight::schedule(2, from, (23, 60)).is_err());
+    }
+
+    #[test]
+    fn unknown_schedule_mode_has_its_own_error() {
+        assert!(matches!(
+            NightLight::schedule(99, (255, 255), (255, 255)),
+            Err(message) if message == "Unrecognized schedule type"
+        ));
     }
 }
