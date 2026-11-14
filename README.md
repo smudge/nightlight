@@ -58,6 +58,14 @@ View current on/off status:
 nightlight status
 ```
 
+For machine-readable status and schedule information:
+
+```bash
+nightlight status --json
+```
+
+The JSON includes `status` (`on` or `off`) and a `schedule` object. Custom schedules include `from` and `to` in 24-hour `HH:MM` format.
+
 Toggle on or off based on current status:
 
 ```

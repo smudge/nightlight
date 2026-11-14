@@ -53,3 +53,23 @@ fn unsupported_command_shapes_fail_without_accessing_settings() {
         );
     }
 }
+
+#[test]
+fn json_flag_only_applies_to_status() {
+    let output = Command::new(env!("CARGO_BIN_EXE_nightlight"))
+        .args(["on", "--json"])
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&output.stderr).contains("Invalid arguments"));
+}
+
+#[test]
+fn help_includes_json_status() {
+    let output = Command::new(env!("CARGO_BIN_EXE_nightlight"))
+        .arg("--help")
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    assert!(String::from_utf8_lossy(&output.stdout).contains("status --json"));
+}

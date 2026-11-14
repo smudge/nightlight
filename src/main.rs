@@ -11,6 +11,7 @@ fn print_usage(program: &String) {
     println!("  on                       Turn Night Shift on (until scheduled stop)");
     println!("  off                      Turn Night Shift off (until scheduled start)");
     println!("  status                   View current on/off status");
+    println!("  status --json            View status and schedule as JSON");
     println!("  toggle                   Toggle on or off based on current status");
     println!("  <noargs>                 Toggle on or off based on current status");
     println!("\ncolor temperature:");
@@ -39,6 +40,33 @@ fn print_status(client: NightLight) -> Result<(), String> {
     Ok(println!("{}{}", status, off_at))
 }
 
+fn status_json(status: Status, schedule: &Schedule) -> String {
+    let state = match status {
+        Status::On => "on",
+        Status::Off => "off",
+    };
+    let schedule_json = match schedule {
+        Schedule::Off => r#"{"type":"off"}"#.to_string(),
+        Schedule::SunsetToSunrise => r#"{"type":"sunset-to-sunrise"}"#.to_string(),
+        Schedule::Custom(from, to) => {
+            let (fh, fm) = from.tuple();
+            let (th, tm) = to.tuple();
+            format!(
+                r#"{{"type":"custom","from":"{:02}:{:02}","to":"{:02}:{:02}"}}"#,
+                fh, fm, th, tm,
+            )
+        }
+    };
+    format!(r#"{{"status":"{}","schedule":{}}}"#, state, schedule_json)
+}
+
+fn print_status_json(client: NightLight) -> Result<(), String> {
+    let schedule = client.get_schedule()?;
+    let status = client.status()?;
+    println!("{}", status_json(status, &schedule));
+    Ok(())
+}
+
 fn toggle(client: NightLight) -> Result<(), String> {
     let status = client.status()?;
 
@@ -61,6 +89,7 @@ fn main() {
         ["on"] => NightLight::new().on(),
         ["off"] => NightLight::new().off(),
         ["status"] => print_status(NightLight::new()),
+        ["status", "--json"] => print_status_json(NightLight::new()),
         ["schedule"] => NightLight::new()
             .get_schedule()
             .map(|schedule| println!("{}", schedule)),
@@ -121,7 +150,30 @@ fn error(text: String) {
 
 #[cfg(test)]
 mod tests {
-    use super::temp_userinput;
+    use super::{temp_userinput, status_json};
+    use nightlight::{Schedule, Status, Time};
+
+    #[test]
+    fn json_status_has_stable_off_and_sunrise_shapes() {
+        assert_eq!(
+            status_json(Status::Off, &Schedule::Off),
+            r#"{"status":"off","schedule":{"type":"off"}}"#,
+        );
+        assert_eq!(
+            status_json(Status::On, &Schedule::SunsetToSunrise),
+            r#"{"status":"on","schedule":{"type":"sunset-to-sunrise"}}"#,
+        );
+    }
+
+    #[test]
+    fn json_status_formats_custom_times_in_24_hour_format() {
+        let from = Time::from_tuple((7, 5)).unwrap();
+        let to = Time::from_tuple((21, 30)).unwrap();
+        assert_eq!(
+            status_json(Status::Off, &Schedule::Custom(from, to)),
+            r#"{"status":"off","schedule":{"type":"custom","from":"07:05","to":"21:30"}}"#,
+        );
+    }
 
     #[test]
     fn kelvin_endpoints_match_strength() {
