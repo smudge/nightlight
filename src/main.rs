@@ -15,7 +15,7 @@ fn print_usage(program: &String) {
     println!("  <noargs>                 Toggle on or off based on current status");
     println!("\ncolor temperature:");
     println!("  temp                     View temperature preference");
-    println!("  temp <0-100|3500K-6500K> Set temperature preference (does not affect on/off)");
+    println!("  temp <0-100|3500K-6000K> Set temperature preference (does not affect on/off)");
     println!("\nautomated schedule:");
     println!("  schedule                 View the current schedule");
     println!("  schedule start           Start schedule from sunset to sunrise");
@@ -102,12 +102,12 @@ fn temp_userinput(input: String) -> i32 {
         if input.to_ascii_uppercase().ends_with("K") {
             match input[..(input.len() - 1)].parse::<f64>().ok() {
                 Some(kelvin_input) => {
-                    // Map kelvin value to 0-100
-                    if kelvin_input < KELVIN_LOWER || kelvin_input > KELVIN_UPPER {
+                    if !kelvin_input.is_finite()
+                        || !(KELVIN_LOWER..=KELVIN_UPPER).contains(&kelvin_input)
+                    {
                         -1
-                    }
-                    else {
-                        (((kelvin_input - KELVIN_LOWER) / (KELVIN_UPPER - KELVIN_LOWER)) * 100.0) as i32
+                    } else {
+                        (((KELVIN_UPPER - kelvin_input) / (KELVIN_UPPER - KELVIN_LOWER)) * 100.0) as i32
                     }
                 }
                 None => -1,
@@ -128,4 +128,30 @@ fn set_custom_schedule(client: NightLight, from: &String, to: &String) -> Result
 fn error(text: String) {
     eprintln!("{}", text);
     exit(1)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::temp_userinput;
+
+    #[test]
+    fn kelvin_endpoints_match_strength() {
+        assert_eq!(temp_userinput("3500K".into()), 100);
+        assert_eq!(temp_userinput("6000K".into()), 0);
+        assert_eq!(temp_userinput("4750k".into()), 50);
+    }
+
+    #[test]
+    fn kelvin_input_rejects_out_of_range_values() {
+        for value in ["3499K", "6001K", "6500K", "NaNK", "infK", "invalidK"] {
+            assert_eq!(temp_userinput(value.into()), -1, "{}", value);
+        }
+    }
+
+    #[test]
+    fn percentage_input_is_unchanged() {
+        assert_eq!(temp_userinput("0".into()), 0);
+        assert_eq!(temp_userinput("70".into()), 70);
+        assert_eq!(temp_userinput("100".into()), 100);
+    }
 }
