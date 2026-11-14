@@ -25,12 +25,18 @@ fn mode_from_settings(enabled: bool, automatic: bool) -> i32 {
 
 // A small seam for testing schedule updates without a live GNOME session.
 trait ScheduleSettings {
+    fn begin(&self);
+    fn commit(&self);
+    fn rollback(&self);
     fn read_boolean(&self, key: &str) -> bool;
     fn write_boolean(&self, key: &str, value: bool) -> Result<(), String>;
     fn write_double(&self, key: &str, value: f64) -> Result<(), String>;
 }
 
 impl ScheduleSettings for gio::Settings {
+    fn begin(&self) { self.delay(); }
+    fn commit(&self) { self.apply(); }
+    fn rollback(&self) { self.revert(); }
     fn read_boolean(&self, key: &str) -> bool {
         self.get_boolean(key)
     }
@@ -66,6 +72,25 @@ fn set_schedule_on<S: ScheduleSettings>(
     settings.write_double("night-light-schedule-to", to)
 }
 
+// GSettings holds staged changes locally until apply; revert discards writes
+// if any key update fails. Schedule configuration is committed as one group.
+fn update_schedule_on<S: ScheduleSettings>(
+    settings: &S,
+    mode: i32,
+    times: Option<((u8, u8), (u8, u8))>,
+) -> Result<(), String> {
+    settings.begin();
+    let result = match times {
+        Some((from, to)) => set_schedule_on(settings, from, to)
+            .and_then(|()| set_mode_on(settings, mode)),
+        None => set_mode_on(settings, mode),
+    };
+    match result {
+        Ok(()) => { settings.commit(); Ok(()) }
+        Err(error) => { settings.rollback(); Err(error) }
+    }
+}
+
 pub struct Client {
     settings: gio::Settings,
 }
@@ -82,6 +107,16 @@ impl Client {
             Ok(_) => Ok(gio::Settings::sync()),
             Err(_) => Err(format!("Failed to set enabled to {}", enabled).to_string()),
         }
+    }
+
+    pub fn set_schedule_mode(
+        &self,
+        mode: c_int,
+        times: Option<((u8, u8), (u8, u8))>,
+    ) -> Result<(), String> {
+        update_schedule_on(&self.settings, mode, times)?;
+        gio::Settings::sync();
+        Ok(())
     }
 
     pub fn set_mode(&self, mode: c_int) -> Result<(), String> {
@@ -133,7 +168,7 @@ impl Client {
 
 #[cfg(test)]
 mod tests {
-    use super::{mode_from_settings, mode_settings, set_mode_on, get_mode_from, set_schedule_on, ScheduleSettings};
+    use super::{mode_from_settings, mode_settings, set_mode_on, get_mode_from, set_schedule_on, update_schedule_on, ScheduleSettings};
     use std::cell::RefCell;
     use std::collections::HashMap;
 
@@ -142,9 +177,30 @@ mod tests {
         booleans: RefCell<HashMap<String, bool>>,
         doubles: RefCell<HashMap<String, f64>>,
         rejected_key: Option<&'static str>,
+        pending_bools: RefCell<Option<HashMap<String, bool>>>,
+        pending_doubles: RefCell<Option<HashMap<String, f64>>>,
     }
 
     impl ScheduleSettings for FakeSettings {
+        fn begin(&self) {
+            *self.pending_bools.borrow_mut() = Some(HashMap::new());
+            *self.pending_doubles.borrow_mut() = Some(HashMap::new());
+        }
+
+        fn commit(&self) {
+            if let Some(pending) = self.pending_bools.borrow_mut().take() {
+                self.booleans.borrow_mut().extend(pending);
+            }
+            if let Some(pending) = self.pending_doubles.borrow_mut().take() {
+                self.doubles.borrow_mut().extend(pending);
+            }
+        }
+
+        fn rollback(&self) {
+            self.pending_bools.borrow_mut().take();
+            self.pending_doubles.borrow_mut().take();
+        }
+
         fn read_boolean(&self, key: &str) -> bool {
             *self.booleans.borrow().get(key).unwrap_or(&false)
         }
@@ -153,7 +209,10 @@ mod tests {
             match self.rejected_key {
                 Some(rejected) if rejected == key => Err(format!("Unable to set {}", key)),
                 _ => {
-                    self.booleans.borrow_mut().insert(key.to_string(), value);
+                    match self.pending_bools.borrow_mut().as_mut() {
+                        Some(pending) => { pending.insert(key.to_string(), value); }
+                        None => { self.booleans.borrow_mut().insert(key.to_string(), value); }
+                    }
                     Ok(())
                 }
             }
@@ -163,7 +222,10 @@ mod tests {
             match self.rejected_key {
                 Some(rejected) if rejected == key => Err(format!("Unable to set {}", key)),
                 _ => {
-                    self.doubles.borrow_mut().insert(key.to_string(), value);
+                    match self.pending_doubles.borrow_mut().as_mut() {
+                        Some(pending) => { pending.insert(key.to_string(), value); }
+                        None => { self.doubles.borrow_mut().insert(key.to_string(), value); }
+                    }
                     Ok(())
                 }
             }
@@ -221,6 +283,48 @@ mod tests {
             ..Default::default()
         };
         assert!(set_schedule_on(&settings, (8, 0), (20, 0)).is_err());
+    }
+
+    #[test]
+    fn entire_custom_schedule_commits_together() {
+        let settings = FakeSettings::default();
+        update_schedule_on(&settings, 2, Some(((7, 30), (21, 15)))).unwrap();
+        assert_eq!(get_mode_from(&settings), 2);
+        let times = settings.doubles.borrow();
+        assert_eq!(times["night-light-schedule-from"], 7.5);
+        assert_eq!(times["night-light-schedule-to"], 21.25);
+    }
+
+    #[test]
+    fn failed_mode_write_discards_staged_times() {
+        let settings = FakeSettings {
+            rejected_key: Some("night-light-schedule-automatic"),
+            ..Default::default()
+        };
+        assert!(update_schedule_on(&settings, 2, Some(((7, 30), (21, 15)))).is_err());
+        assert_eq!(get_mode_from(&settings), 0);
+        assert!(settings.doubles.borrow().is_empty());
+        assert!(settings.pending_doubles.borrow().is_none());
+    }
+
+    #[test]
+    fn failed_time_write_discards_prior_staged_values() {
+        let settings = FakeSettings {
+            rejected_key: Some("night-light-schedule-to"),
+            ..Default::default()
+        };
+        assert!(update_schedule_on(&settings, 2, Some(((7, 30), (21, 15)))).is_err());
+        assert!(settings.doubles.borrow().is_empty());
+        assert!(settings.booleans.borrow().is_empty());
+    }
+
+    #[test]
+    fn mode_only_update_commits_and_preserves_times() {
+        let settings = FakeSettings::default();
+        update_schedule_on(&settings, 2, Some(((7, 30), (21, 15)))).unwrap();
+        update_schedule_on(&settings, 0, None).unwrap();
+        assert_eq!(get_mode_from(&settings), 0);
+        assert_eq!(settings.doubles.borrow()["night-light-schedule-from"], 7.5);
     }
 
 }
