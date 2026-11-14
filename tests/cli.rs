@@ -31,3 +31,25 @@ fn extra_arguments_fail() {
     assert_eq!(output.status.code(), Some(1));
     assert!(String::from_utf8_lossy(&output.stderr).contains("Invalid arguments"));
 }
+
+#[test]
+fn unsupported_command_shapes_fail_without_accessing_settings() {
+    for args in [
+        &["schedule", "bogus"][..],
+        &["schedule", "start", "extra", "argument"][..],
+        &["temp", "70", "extra"][..],
+        &["status", "extra"][..],
+        &["--help", "extra"][..],
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_nightlight"))
+            .args(args)
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), Some(1), "{args:?}");
+        assert!(
+            String::from_utf8_lossy(&output.stderr).contains("Invalid arguments"),
+            "{args:?}: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+}
