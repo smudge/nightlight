@@ -69,8 +69,7 @@ impl NightLight {
     }
 
     pub fn get_schedule(&self) -> Result<Schedule, String> {
-        let (from_time, to_time) = self.client.get_schedule()?;
-        NightLight::schedule(self.client.get_mode()?, from_time, to_time)
+        NightLight::schedule(self.client.get_mode()?, || self.client.get_schedule())
     }
 
     pub fn set_temp(&self, temp: i32) -> Result<(), String> {
@@ -92,11 +91,17 @@ impl NightLight {
         })
     }
 
-    fn schedule(mode: i32, from: (u8, u8), to: (u8, u8)) -> Result<Schedule, String> {
+    fn schedule<F>(mode: i32, read_times: F) -> Result<Schedule, String>
+    where
+        F: FnOnce() -> Result<((u8, u8), (u8, u8)), String>,
+    {
         match mode {
             0 => Ok(Schedule::Off),
             1 => Ok(Schedule::SunsetToSunrise),
-            2 => Ok(Schedule::Custom(Time::from_tuple(from)?, Time::from_tuple(to)?)),
+            2 => {
+                let (from, to) = read_times()?;
+                Ok(Schedule::Custom(Time::from_tuple(from)?, Time::from_tuple(to)?))
+            }
             _ => Err("Unrecognized schedule type".to_string()),
         }
     }
@@ -108,13 +113,12 @@ mod tests {
 
     #[test]
     fn non_custom_schedules_ignore_invalid_stored_times() {
-        let invalid = (255, 255);
         assert!(matches!(
-            NightLight::schedule(0, invalid, invalid),
+            NightLight::schedule(0, || panic!("should not read unused schedule times")),
             Ok(Schedule::Off)
         ));
         assert!(matches!(
-            NightLight::schedule(1, invalid, invalid),
+            NightLight::schedule(1, || panic!("should not read unused schedule times")),
             Ok(Schedule::SunsetToSunrise)
         ));
     }
@@ -124,7 +128,7 @@ mod tests {
         let from = (8, 30);
         let to = (22, 15);
 
-        match NightLight::schedule(2, from, to).unwrap() {
+        match NightLight::schedule(2, || Ok((from, to))).unwrap() {
             Schedule::Custom(start, end) => {
                 assert_eq!(start.tuple(), from);
                 assert_eq!(end.tuple(), to);
@@ -132,14 +136,22 @@ mod tests {
             _ => panic!("Expected custom schedule"),
         }
 
-        assert!(NightLight::schedule(2, (24, 0), to).is_err());
-        assert!(NightLight::schedule(2, from, (23, 60)).is_err());
+        assert!(NightLight::schedule(2, || Ok(((24, 0), to))).is_err());
+        assert!(NightLight::schedule(2, || Ok((from, (23, 60)))).is_err());
+    }
+
+    #[test]
+    fn custom_schedule_propagates_backend_read_errors() {
+        assert!(matches!(
+            NightLight::schedule(2, || Err("backend read failed".into())),
+            Err(message) if message == "backend read failed"
+        ));
     }
 
     #[test]
     fn unknown_schedule_mode_has_its_own_error() {
         assert!(matches!(
-            NightLight::schedule(99, (255, 255), (255, 255)),
+            NightLight::schedule(99, || panic!("should not read unknown mode")),
             Err(message) if message == "Unrecognized schedule type"
         ));
     }
