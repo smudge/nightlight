@@ -1,5 +1,6 @@
 use std::fmt;
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Status {
     On,
     Off,
@@ -15,6 +16,13 @@ impl fmt::Display for Status {
 }
 
 impl Status {
+    pub(crate) fn from_bool(on: bool) -> Status {
+        match on {
+            true => Status::On,
+            false => Status::Off,
+        }
+    }
+
     pub fn as_bool(&self) -> bool {
         match self {
             Status::On => true,

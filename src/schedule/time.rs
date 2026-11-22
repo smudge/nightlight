@@ -3,6 +3,7 @@ extern crate time;
 use crate::os::Locale;
 use std::fmt;
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Time {
     inner: time::Time,
 }
