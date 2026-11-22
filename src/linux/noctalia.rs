@@ -1,5 +1,5 @@
 use super::command::{Runner, System};
-use super::kelvin;
+use crate::kelvin;
 use super::transaction::{self, Store};
 use crate::backend::Backend;
 use crate::{Schedule, Status, Time};
@@ -121,6 +121,10 @@ impl<S: Store> Backend for Noctalia<S> {
         Ok(kelvin::to_strength(self.read(NIGHT)?))
     }
 
+    fn kelvin(&self) -> Result<Option<u32>, String> {
+        self.read(NIGHT).map(Some)
+    }
+
     fn set_strength(&self, strength: i32) -> Result<(), String> {
         let night = kelvin::from_strength(strength);
         let day: u32 = self.read(DAY)?;
@@ -231,6 +235,7 @@ mod tests {
     fn strength_maps_onto_the_night_temperature() {
         let noctalia = noctalia(&defaults());
         assert_eq!(noctalia.strength().unwrap(), 80);
+        assert_eq!(noctalia.kelvin(), Ok(Some(4000)));
         noctalia.set_strength(50).unwrap();
         assert_eq!(noctalia.config.get(NIGHT).unwrap(), "4750");
     }

@@ -27,7 +27,7 @@ enum CommandOutput {
     Help,
     Status(Status, Option<Schedule>),
     Schedule(Schedule),
-    Temperature(i32),
+    Temperature { strength: i32, kelvin: Option<u32> },
     Applied {
         command: &'static str,
         value: Value,
@@ -141,7 +141,10 @@ fn output_value(output: &CommandOutput, program: &str) -> Value {
             "schedule": schedule.as_ref().map(schedule_value)
         }),
         CommandOutput::Schedule(schedule) => json!({"schedule": schedule_value(schedule)}),
-        CommandOutput::Temperature(temp) => json!({"temperature": temp}),
+        CommandOutput::Temperature { strength, kelvin } => match kelvin {
+            Some(kelvin) => json!({"temperature": strength, "kelvin": kelvin}),
+            None => json!({"temperature": strength}),
+        },
         CommandOutput::Applied { command, value } => json!({
             "ok": true,
             "command": command,
@@ -158,7 +161,9 @@ fn format_output(output: &CommandOutput, format: OutputFormat, program: &str) ->
             Some(status_text(status, schedule))
         }
         (OutputFormat::Text, CommandOutput::Schedule(schedule)) => Some(schedule.to_string()),
-        (OutputFormat::Text, CommandOutput::Temperature(temp)) => Some(temp.to_string()),
+        (OutputFormat::Text, CommandOutput::Temperature { strength, .. }) => {
+            Some(strength.to_string())
+        }
         (OutputFormat::Text, CommandOutput::Applied { .. }) => None,
     }
 }
@@ -236,7 +241,11 @@ fn execute(command: Command<'_>) -> Result<CommandOutput, String> {
             Ok(CommandOutput::Applied { command: "schedule", value })
         }
         Command::Temperature => {
-            Ok(CommandOutput::Temperature(NightLight::new().get_temp()?))
+            let client = NightLight::new();
+            Ok(CommandOutput::Temperature {
+                strength: client.get_temp()?,
+                kelvin: client.get_kelvin()?,
+            })
         }
         Command::SetTemperature(input) => match temp_userinput(input.to_string()) {
             temp @ 0..=100 => {
@@ -362,8 +371,12 @@ mod tests {
             })
         );
         assert_eq!(
-            output_value(&CommandOutput::Temperature(75), "nightlight"),
+            output_value(&CommandOutput::Temperature { strength: 75, kelvin: None }, "nightlight"),
             json!({"temperature":75})
+        );
+        assert_eq!(
+            output_value(&CommandOutput::Temperature { strength: 75, kelvin: Some(4125) }, "nightlight"),
+            json!({"temperature":75,"kelvin":4125})
         );
     }
 

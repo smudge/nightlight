@@ -116,6 +116,14 @@ fn temperature_and_toggle_go_through_gsettings() {
     assert_eq!(session.gsettings("night-light-temperature"), "uint32 4750");
     assert_eq!(session.run(&["temp"])["temperature"], 50);
 
+    let mut command = Command::new("gsettings");
+    session.configure(&mut command);
+    command
+        .args(["set", "org.gnome.settings-daemon.plugins.color", "night-light-temperature", "2700"])
+        .status()
+        .unwrap();
+    assert_eq!(session.run(&["temp"])["kelvin"], 2700);
+
     session.run(&["on"]);
     assert_eq!(session.gsettings("night-light-enabled"), "true");
     session.run(&["toggle"]);

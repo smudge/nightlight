@@ -1,5 +1,5 @@
 use super::command::{Runner, System};
-use super::kelvin;
+use crate::kelvin;
 use super::transaction::{self, Store};
 use crate::backend::Backend;
 use crate::{Schedule, Status, Time};
@@ -13,7 +13,7 @@ const SOURCE: &str = "knighttimerc/General/Source";
 const SUNSET: &str = "knighttimerc/Times/SunsetStart";
 const SUNRISE: &str = "knighttimerc/Times/SunriseStart";
 
-const DEFAULT_NIGHT: f64 = 4500.0;
+const DEFAULT_NIGHT: u32 = 4500;
 
 const CONSTANT: &str = "KDE night light is set to always on, which has no schedule";
 
@@ -131,6 +131,15 @@ impl<S: Store> Kde<S> {
         Ok(self.value(ACTIVE, "false")? == "true")
     }
 
+    fn night_kelvin(&self) -> Result<u32, String> {
+        match self.config.read(NIGHT)? {
+            Some(value) => value
+                .parse()
+                .map_err(|_| format!("Unexpected value for {}: {}", NIGHT, value)),
+            None => Ok(DEFAULT_NIGHT),
+        }
+    }
+
     fn time(&self, key: &str, default: &str) -> Result<Time, String> {
         parse_time(key, &self.value(key, default)?)
     }
@@ -218,13 +227,11 @@ impl<S: Store> Backend for Kde<S> {
     }
 
     fn strength(&self) -> Result<i32, String> {
-        let kelvin = match self.config.read(NIGHT)? {
-            Some(value) => value
-                .parse()
-                .map_err(|_| format!("Unexpected value for {}: {}", NIGHT, value))?,
-            None => DEFAULT_NIGHT,
-        };
-        Ok(kelvin::to_strength(kelvin))
+        Ok(kelvin::to_strength(self.night_kelvin()? as f64))
+    }
+
+    fn kelvin(&self) -> Result<Option<u32>, String> {
+        self.night_kelvin().map(Some)
     }
 
     fn set_strength(&self, strength: i32) -> Result<(), String> {
@@ -336,8 +343,10 @@ mod tests {
 
     #[test]
     fn strength_maps_onto_the_night_temperature() {
+        assert_eq!(kde(Schema::NightTime, &[]).kelvin(), Ok(Some(DEFAULT_NIGHT)));
         let kde = kde(Schema::NightTime, &[(NIGHT, "3000")]);
         assert_eq!(kde.strength(), Ok(100));
+        assert_eq!(kde.kelvin(), Ok(Some(3000)));
         kde.set_strength(50).unwrap();
         assert_eq!(kde.config.get(NIGHT).unwrap(), "4750");
     }

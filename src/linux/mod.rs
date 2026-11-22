@@ -6,7 +6,6 @@ mod command;
 mod gnome;
 mod hyprsunset;
 mod kde;
-mod kelvin;
 mod locale;
 mod noctalia;
 mod transaction;

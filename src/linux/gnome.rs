@@ -1,7 +1,7 @@
 use super::command::{Runner, System};
 use super::transaction::{self, Store};
 use crate::backend::Backend;
-use super::kelvin;
+use crate::kelvin;
 use crate::{Schedule, Status, Time};
 
 const SCHEMA: &str = "org.gnome.settings-daemon.plugins.color";
@@ -120,6 +120,10 @@ impl<S: Store> Backend for Gnome<S> {
 
     fn strength(&self) -> Result<i32, String> {
         Ok(kelvin::to_strength(self.read(TEMPERATURE)?))
+    }
+
+    fn kelvin(&self) -> Result<Option<u32>, String> {
+        self.read(TEMPERATURE).map(Some)
     }
 
     fn set_strength(&self, strength: i32) -> Result<(), String> {
@@ -242,6 +246,7 @@ mod tests {
     fn strength_maps_onto_kelvin() {
         let gnome = gnome(&defaults());
         assert_eq!(gnome.strength().unwrap(), 50);
+        assert_eq!(gnome.kelvin(), Ok(Some(4750)));
         gnome.set_strength(100).unwrap();
         assert_eq!(gnome.settings.get(TEMPERATURE).unwrap(), "3500");
         gnome.set_strength(0).unwrap();
@@ -252,6 +257,7 @@ mod tests {
     fn gnome_default_temperature_clamps_to_warmest() {
         let gnome = gnome(&[(TEMPERATURE, "uint32 2700")]);
         assert_eq!(gnome.strength(), Ok(100));
+        assert_eq!(gnome.kelvin(), Ok(Some(2700)));
     }
 
     struct FakeRunner {

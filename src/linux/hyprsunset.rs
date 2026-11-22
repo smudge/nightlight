@@ -1,4 +1,4 @@
-use super::kelvin;
+use crate::kelvin;
 use crate::backend::Backend;
 use crate::{Schedule, Status};
 use std::io::{Read, Write};
@@ -77,7 +77,7 @@ impl<S: Socket> Hyprsunset<S> {
         }
     }
 
-    fn kelvin(&self) -> Result<u32, String> {
+    fn live_kelvin(&self) -> Result<u32, String> {
         let reply = self.socket.send("temperature")?;
         reply
             .parse()
@@ -113,7 +113,7 @@ impl<S: Socket> Backend for Hyprsunset<S> {
         match status {
             Status::Off => self.command("identity"),
             Status::On => {
-                let kelvin = match self.kelvin()? {
+                let kelvin = match self.live_kelvin()? {
                     kelvin if kelvin >= NEUTRAL_KELVIN => DEFAULT_KELVIN,
                     kelvin => kelvin,
                 };
@@ -135,7 +135,11 @@ impl<S: Socket> Backend for Hyprsunset<S> {
     }
 
     fn strength(&self) -> Result<i32, String> {
-        Ok(kelvin::to_strength(self.kelvin()? as f64))
+        Ok(kelvin::to_strength(self.live_kelvin()? as f64))
+    }
+
+    fn kelvin(&self) -> Result<Option<u32>, String> {
+        self.live_kelvin().map(Some)
     }
 
     fn set_strength(&self, strength: i32) -> Result<(), String> {
@@ -242,6 +246,7 @@ mod tests {
     fn old_versions_still_toggle_and_report_temperature() {
         let hyprsunset = FakeHyprsunset::new(false, 4750, false);
         assert_eq!(hyprsunset.strength(), Ok(50));
+        assert_eq!(hyprsunset.kelvin(), Ok(Some(4750)));
         hyprsunset.set_status(Status::Off).unwrap();
         assert!(*hyprsunset.socket.identity.borrow());
         hyprsunset.set_status(Status::On).unwrap();
