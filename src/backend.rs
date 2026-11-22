@@ -13,4 +13,8 @@ pub(crate) trait Backend {
     fn set_schedule(&self, schedule: Schedule) -> Result<(), String>;
     fn strength(&self) -> Result<i32, String>;
     fn set_strength(&self, strength: i32) -> Result<(), String>;
+
+    fn kelvin(&self) -> Result<Option<u32>, String> {
+        Ok(None)
+    }
 }

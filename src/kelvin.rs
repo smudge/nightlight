@@ -1,3 +1,5 @@
+#![cfg_attr(target_os = "macos", allow(dead_code))]
+
 const WARMEST: f64 = 3500.0;
 const COOLEST: f64 = 6000.0;
 

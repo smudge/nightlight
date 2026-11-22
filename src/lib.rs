@@ -2,6 +2,7 @@
 #[cfg_attr(target_os = "macos", path = "macos/mod.rs")]
 mod os;
 mod backend;
+mod kelvin;
 mod schedule;
 mod status;
 
@@ -77,6 +78,11 @@ impl NightLight {
 
     pub fn get_temp(&self) -> Result<i32, String> {
         self.backend.strength()
+    }
+
+    /// The night temperature in Kelvin, or `None` on macOS.
+    pub fn get_kelvin(&self) -> Result<Option<u32>, String> {
+        self.backend.kelvin()
     }
 
     pub fn status(&self) -> Result<Status, String> {
