@@ -59,6 +59,14 @@ impl NightLight {
         self.backend.schedule()
     }
 
+    /// Like `get_schedule`, but `None` for backends without one (e.g. hyprsunset).
+    pub fn current_schedule(&self) -> Result<Option<Schedule>, String> {
+        match self.backend.has_schedule() {
+            true => self.backend.schedule().map(Some),
+            false => Ok(None),
+        }
+    }
+
     pub fn set_temp(&self, temp: i32) -> Result<(), String> {
         if !(0..=100).contains(&temp) {
             return Err("Color temperature must be a number from 0 to 100.".to_string());
@@ -123,6 +131,10 @@ mod tests {
             Ok(())
         }
 
+        fn has_schedule(&self) -> bool {
+            self.schedule.get().is_some()
+        }
+
         fn schedule(&self) -> Result<Schedule, String> {
             self.call("schedule")?;
             self.schedule.get().ok_or_else(|| "no schedule".to_string())
@@ -179,6 +191,16 @@ mod tests {
         );
         night_light.set_schedule(schedule).unwrap();
         assert_eq!(night_light.get_schedule(), Ok(schedule));
+        assert_eq!(night_light.current_schedule(), Ok(Some(schedule)));
+    }
+
+    #[test]
+    fn backends_without_schedules_report_none() {
+        let (night_light, backend) = night_light(FakeBackend::new());
+        backend.schedule.set(None);
+        assert_eq!(night_light.current_schedule(), Ok(None));
+        assert!(!backend.calls.borrow().contains(&"schedule"));
+        assert!(night_light.get_schedule().is_err());
     }
 
     #[test]

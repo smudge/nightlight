@@ -25,7 +25,7 @@ enum Command<'a> {
 
 enum CommandOutput {
     Help,
-    Status(Status, Schedule),
+    Status(Status, Option<Schedule>),
     Schedule(Schedule),
     Temperature(i32),
     Applied {
@@ -122,13 +122,13 @@ fn schedule_value(schedule: &Schedule) -> Value {
     }
 }
 
-fn status_text(status: &Status, schedule: &Schedule) -> String {
+fn status_text(status: &Status, schedule: &Option<Schedule>) -> String {
     let suffix = match (schedule, status) {
-        (Schedule::SunsetToSunrise, Status::On) => " until sunrise".to_string(),
-        (Schedule::SunsetToSunrise, Status::Off) => " until sunset".to_string(),
-        (Schedule::Off, _) => String::new(),
-        (Schedule::Custom(_, to), Status::On) => format!(" until {}", to),
-        (Schedule::Custom(from, _), Status::Off) => format!(" until {}", from),
+        (Some(Schedule::SunsetToSunrise), Status::On) => " until sunrise".to_string(),
+        (Some(Schedule::SunsetToSunrise), Status::Off) => " until sunset".to_string(),
+        (Some(Schedule::Off), _) | (None, _) => String::new(),
+        (Some(Schedule::Custom(_, to)), Status::On) => format!(" until {}", to),
+        (Some(Schedule::Custom(from, _)), Status::Off) => format!(" until {}", from),
     };
     format!("{}{}", status, suffix)
 }
@@ -138,7 +138,7 @@ fn output_value(output: &CommandOutput, program: &str) -> Value {
         CommandOutput::Help => json!({"ok": true, "help": usage_text(program)}),
         CommandOutput::Status(status, schedule) => json!({
             "status": status.to_string(),
-            "schedule": schedule_value(schedule)
+            "schedule": schedule.as_ref().map(schedule_value)
         }),
         CommandOutput::Schedule(schedule) => json!({"schedule": schedule_value(schedule)}),
         CommandOutput::Temperature(temp) => json!({"temperature": temp}),
@@ -208,7 +208,7 @@ fn execute(command: Command<'_>) -> Result<CommandOutput, String> {
         }
         Command::Status => {
             let client = NightLight::new();
-            let schedule = client.get_schedule()?;
+            let schedule = client.current_schedule()?;
             let status = client.status()?;
             Ok(CommandOutput::Status(status, schedule))
         }
@@ -338,19 +338,24 @@ mod tests {
     #[test]
     fn json_output_for_status_and_schedules() {
         assert_eq!(
-            output_value(&CommandOutput::Status(Status::Off, Schedule::Off), "nightlight"),
+            output_value(&CommandOutput::Status(Status::Off, Some(Schedule::Off)), "nightlight"),
             json!({"status":"off","schedule":{"type":"off"}})
         );
         assert_eq!(
-            output_value(&CommandOutput::Status(Status::On, Schedule::SunsetToSunrise), "nightlight"),
+            output_value(&CommandOutput::Status(Status::On, Some(Schedule::SunsetToSunrise)), "nightlight"),
             json!({"status":"on","schedule":{"type":"sunset-to-sunrise"}})
         );
+        assert_eq!(
+            output_value(&CommandOutput::Status(Status::On, None), "nightlight"),
+            json!({"status":"on","schedule":null})
+        );
+        assert_eq!(status_text(&Status::On, &None), "on");
         let schedule = Schedule::Custom(
             Time::from_tuple((7, 5)).unwrap(),
             Time::from_tuple((21, 30)).unwrap(),
         );
         assert_eq!(
-            output_value(&CommandOutput::Status(Status::Off, schedule), "nightlight"),
+            output_value(&CommandOutput::Status(Status::Off, Some(schedule)), "nightlight"),
             json!({
                 "status":"off",
                 "schedule":{"type":"custom","from":"07:05","to":"21:30"}
@@ -364,13 +369,13 @@ mod tests {
 
     #[test]
     fn status_text_names_the_next_transition() {
-        let sunset = Schedule::SunsetToSunrise;
+        let sunset = Some(Schedule::SunsetToSunrise);
         assert_eq!(status_text(&Status::On, &sunset), "on until sunrise");
         assert_eq!(status_text(&Status::Off, &sunset), "off until sunset");
-        assert_eq!(status_text(&Status::Off, &Schedule::Off), "off");
+        assert_eq!(status_text(&Status::Off, &Some(Schedule::Off)), "off");
         let (from, to) = (Time::from_tuple((20, 0)).unwrap(), Time::from_tuple((6, 30)).unwrap());
         let (on, off) = (format!("on until {}", to), format!("off until {}", from));
-        let custom = Schedule::Custom(from, to);
+        let custom = Some(Schedule::Custom(from, to));
         assert_eq!(status_text(&Status::On, &custom), on);
         assert_eq!(status_text(&Status::Off, &custom), off);
     }
