@@ -24,8 +24,8 @@ impl GSettings {
 }
 
 impl<R: Runner> Store for GSettings<R> {
-    fn read(&self, key: &str) -> Result<String, String> {
-        self.runner.run("gsettings", &["get", SCHEMA, key])
+    fn read(&self, key: &str) -> Result<Option<String>, String> {
+        self.runner.run("gsettings", &["get", SCHEMA, key]).map(Some)
     }
 
     fn write(&self, key: &str, value: &str) -> Result<(), String> {
@@ -74,7 +74,7 @@ fn time_to_hours(time: Time) -> String {
 
 impl<S: Store> Gnome<S> {
     fn read<T: std::str::FromStr>(&self, key: &str) -> Result<T, String> {
-        parse(key, &self.settings.read(key)?)
+        parse(key, &self.settings.require(key)?)
     }
 }
 
@@ -276,7 +276,7 @@ mod tests {
                 output: Ok("uint32 2700".into()),
             },
         };
-        assert_eq!(settings.read(TEMPERATURE).unwrap(), "uint32 2700");
+        assert_eq!(settings.read(TEMPERATURE).unwrap().unwrap(), "uint32 2700");
         settings.write(ENABLED, "true").unwrap();
         assert_eq!(
             *settings.runner.calls.borrow(),

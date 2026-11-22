@@ -4,14 +4,16 @@ use command::{Runner, System};
 
 mod command;
 mod gnome;
+mod kelvin;
 mod locale;
+mod noctalia;
 mod transaction;
 
 pub use self::locale::Locale;
 
 const OVERRIDE: &str = "NIGHTLIGHT_BACKEND";
 
-const BACKENDS: &[&str] = &["gnome"];
+const BACKENDS: &[&str] = &["gnome", "noctalia"];
 
 pub(crate) fn backend() -> Box<dyn Backend> {
     let session = Session {
@@ -34,6 +36,7 @@ pub(crate) fn backend_named(name: &str) -> Result<Box<dyn Backend>, String> {
 fn build(name: &str) -> Box<dyn Backend> {
     match name {
         "gnome" => Box::new(gnome::Gnome::new()),
+        "noctalia" => Box::new(noctalia::Noctalia::new()),
         _ => unreachable!("unknown backend {}", name),
     }
 }
@@ -63,6 +66,11 @@ impl Session<'_> {
 
         if self.desktop_is("GNOME") || self.desktop_is("PANTHEON") {
             return Ok("gnome");
+        }
+
+        // Noctalia can run on desktops that have their own night light (e.g. KDE).
+        if noctalia::running(self.runner) {
+            return Ok("noctalia");
         }
 
         if self.desktops().is_empty() && gnome::installed(self.runner) {
@@ -161,6 +169,16 @@ mod tests {
         assert_eq!(select(&[("XDG_CURRENT_DESKTOP", "GNOME")], vec![]), Ok("gnome"));
         assert_eq!(select(&[("XDG_CURRENT_DESKTOP", "ubuntu:GNOME")], vec![]), Ok("gnome"));
         assert_eq!(select(&[("XDG_CURRENT_DESKTOP", "Pantheon")], vec![]), Ok("gnome"));
+    }
+
+    #[test]
+    fn running_noctalia_is_detected_on_any_other_compositor() {
+        let probe = vec!["noctalia msg config-get nightlight.enabled"];
+        assert_eq!(select(&[("XDG_CURRENT_DESKTOP", "niri")], probe.clone()), Ok("noctalia"));
+        assert_eq!(select(&[("XDG_CURRENT_DESKTOP", "Hyprland")], probe.clone()), Ok("noctalia"));
+        assert_eq!(select(&[], probe.clone()), Ok("noctalia"));
+        assert_eq!(select(&[("XDG_CURRENT_DESKTOP", "GNOME")], probe), Ok("gnome"));
+        assert!(select(&[("XDG_CURRENT_DESKTOP", "niri")], vec![]).is_err());
     }
 
     #[test]
