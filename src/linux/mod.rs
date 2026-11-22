@@ -5,6 +5,7 @@ use command::{Runner, System};
 mod command;
 mod gnome;
 mod hyprsunset;
+mod kde;
 mod kelvin;
 mod locale;
 mod noctalia;
@@ -14,7 +15,7 @@ pub use self::locale::Locale;
 
 const OVERRIDE: &str = "NIGHTLIGHT_BACKEND";
 
-const BACKENDS: &[&str] = &["gnome", "noctalia", "hyprsunset"];
+const BACKENDS: &[&str] = &["gnome", "kde", "noctalia", "hyprsunset"];
 
 pub(crate) fn backend() -> Box<dyn Backend> {
     let session = Session {
@@ -39,6 +40,7 @@ fn build(name: &str) -> Box<dyn Backend> {
         "gnome" => Box::new(gnome::Gnome::new()),
         "noctalia" => Box::new(noctalia::Noctalia::new()),
         "hyprsunset" => Box::new(hyprsunset::Hyprsunset::new()),
+        "kde" => Box::new(kde::Kde::new()),
         _ => unreachable!("unknown backend {}", name),
     }
 }
@@ -77,6 +79,10 @@ impl Session<'_> {
 
         if hyprsunset::running(self.var) {
             return Ok("hyprsunset");
+        }
+
+        if self.desktop_is("KDE") {
+            return Ok("kde");
         }
 
         if self.desktops().is_empty() && gnome::installed(self.runner) {
@@ -185,6 +191,13 @@ mod tests {
         assert_eq!(select(&[], probe.clone()), Ok("noctalia"));
         assert_eq!(select(&[("XDG_CURRENT_DESKTOP", "GNOME")], probe), Ok("gnome"));
         assert!(select(&[("XDG_CURRENT_DESKTOP", "niri")], vec![]).is_err());
+    }
+
+    #[test]
+    fn kde_sessions_are_detected_unless_noctalia_runs_on_them() {
+        assert_eq!(select(&[("XDG_CURRENT_DESKTOP", "KDE")], vec![]), Ok("kde"));
+        let noctalia = vec!["noctalia msg config-get nightlight.enabled"];
+        assert_eq!(select(&[("XDG_CURRENT_DESKTOP", "KDE")], noctalia), Ok("noctalia"));
     }
 
     #[test]
