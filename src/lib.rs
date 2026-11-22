@@ -71,3 +71,120 @@ impl NightLight {
         self.backend.status()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{Backend, NightLight, Schedule, Status, Time};
+    use std::cell::{Cell, RefCell};
+    use std::rc::Rc;
+
+    struct FakeBackend {
+        status: Cell<Status>,
+        schedule: Cell<Option<Schedule>>,
+        strength: Cell<i32>,
+        failure: Option<&'static str>,
+        calls: RefCell<Vec<&'static str>>,
+    }
+
+    impl FakeBackend {
+        fn new() -> FakeBackend {
+            FakeBackend {
+                status: Cell::new(Status::Off),
+                schedule: Cell::new(Some(Schedule::Off)),
+                strength: Cell::new(50),
+                failure: None,
+                calls: RefCell::new(vec![]),
+            }
+        }
+
+        fn call(&self, name: &'static str) -> Result<(), String> {
+            self.calls.borrow_mut().push(name);
+            self.failure.map_or(Ok(()), |error| Err(error.to_string()))
+        }
+    }
+
+    impl Backend for Rc<FakeBackend> {
+        fn name(&self) -> &'static str {
+            "fake"
+        }
+
+        fn status(&self) -> Result<Status, String> {
+            self.call("status")?;
+            Ok(self.status.get())
+        }
+
+        fn set_status(&self, status: Status) -> Result<(), String> {
+            self.call("set_status")?;
+            self.status.set(status);
+            Ok(())
+        }
+
+        fn schedule(&self) -> Result<Schedule, String> {
+            self.call("schedule")?;
+            self.schedule.get().ok_or_else(|| "no schedule".to_string())
+        }
+
+        fn set_schedule(&self, schedule: Schedule) -> Result<(), String> {
+            self.call("set_schedule")?;
+            self.schedule.set(Some(schedule));
+            Ok(())
+        }
+
+        fn strength(&self) -> Result<i32, String> {
+            self.call("strength")?;
+            Ok(self.strength.get())
+        }
+
+        fn set_strength(&self, strength: i32) -> Result<(), String> {
+            self.call("set_strength")?;
+            self.strength.set(strength);
+            Ok(())
+        }
+    }
+
+    fn night_light(backend: FakeBackend) -> (NightLight, Rc<FakeBackend>) {
+        let backend = Rc::new(backend);
+        (NightLight { backend: Box::new(backend.clone()) }, backend)
+    }
+
+    #[test]
+    fn on_and_off_set_the_status() {
+        let (night_light, backend) = night_light(FakeBackend::new());
+        night_light.on().unwrap();
+        assert_eq!(night_light.status(), Ok(Status::On));
+        night_light.off().unwrap();
+        assert_eq!(backend.status.get(), Status::Off);
+        assert_eq!(night_light.backend_name(), "fake");
+    }
+
+    #[test]
+    fn toggle_failures_are_reported() {
+        let (night_light, _) = night_light(FakeBackend {
+            failure: Some("backend unavailable"),
+            ..FakeBackend::new()
+        });
+        assert_eq!(night_light.on(), Err("Failed to turn Night Shift on".to_string()));
+    }
+
+    #[test]
+    fn schedules_pass_through() {
+        let (night_light, _) = night_light(FakeBackend::new());
+        let schedule = Schedule::Custom(
+            Time::from_tuple((20, 0)).unwrap(),
+            Time::from_tuple((6, 0)).unwrap(),
+        );
+        night_light.set_schedule(schedule).unwrap();
+        assert_eq!(night_light.get_schedule(), Ok(schedule));
+    }
+
+    #[test]
+    fn temperature_is_validated_before_reaching_the_backend() {
+        let (night_light, backend) = night_light(FakeBackend::new());
+        for invalid in [-1, 101] {
+            assert!(night_light.set_temp(invalid).is_err());
+        }
+        assert!(backend.calls.borrow().is_empty());
+        night_light.set_temp(70).unwrap();
+        assert_eq!(night_light.get_temp(), Ok(70));
+    }
+}
