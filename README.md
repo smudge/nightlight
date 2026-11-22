@@ -1,5 +1,8 @@
 # nightlight
 
+[![CI](https://github.com/smudge/nightlight/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/smudge/nightlight/actions/workflows/ci.yml)
+[![Downloads](https://img.shields.io/crates/d/nightlight)](https://crates.io/crates/nightlight)
+
 > A CLI for configuring "Night Shift" on macOS (and night light on Linux) 🌕🌖🌗🌘🌑
 
 This crate also doubles as a Rust library. 🦀
