@@ -36,6 +36,10 @@ impl<R: Runner> Store for GSettings<R> {
     }
 }
 
+pub(crate) fn installed(runner: &dyn Runner) -> bool {
+    runner.run("gsettings", &["get", SCHEMA, ENABLED]).is_ok()
+}
+
 pub(crate) struct Gnome<S: Store = GSettings> {
     settings: S,
 }

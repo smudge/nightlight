@@ -20,6 +20,16 @@ pub(crate) fn backend() -> Box<dyn Backend> {
     })
 }
 
+pub(crate) fn backend_named(name: &str) -> Result<Box<dyn Backend>, String> {
+    match name {
+        "macos" => Ok(backend()),
+        _ => Err(format!(
+            "Unknown night light backend '{}'. Supported backends: macos",
+            name
+        )),
+    }
+}
+
 struct MacOS {
     client: Client,
 }
@@ -34,7 +44,9 @@ impl Backend for MacOS {
     }
 
     fn set_status(&self, status: Status) -> Result<(), String> {
-        self.client.set_enabled(status.as_bool())
+        self.client
+            .set_enabled(status.as_bool())
+            .map_err(|_| format!("Failed to turn Night Shift {}", status))
     }
 
     fn schedule(&self) -> Result<Schedule, String> {
@@ -55,7 +67,6 @@ impl Backend for MacOS {
         }
 
         self.set_status(status)
-            .map_err(|_| format!("Failed to turn Night Shift {}", status))
     }
 
     fn strength(&self) -> Result<i32, String> {
