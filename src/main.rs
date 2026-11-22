@@ -34,6 +34,14 @@ enum CommandOutput {
     },
 }
 
+#[cfg(target_os = "linux")]
+const ENVIRONMENT: &str = r#"
+Environment:
+  NIGHTLIGHT_BACKEND       Use a specific backend instead of detecting one
+"#;
+#[cfg(not(target_os = "linux"))]
+const ENVIRONMENT: &str = "";
+
 fn usage_text(program: &str) -> String {
     format!(
         r#"{} v{}
@@ -44,7 +52,7 @@ usage:
 
 Global options:
   --json                   Output JSON for any command (including errors)
-
+{}
 Available Commands By Category:
 
 manual on/off control:
@@ -67,7 +75,8 @@ automated schedule:
         env!("CARGO_PKG_NAME"),
         env!("CARGO_PKG_VERSION"),
         env!("CARGO_PKG_DESCRIPTION"),
-        program
+        program,
+        ENVIRONMENT
     )
 }
 

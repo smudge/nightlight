@@ -100,6 +100,20 @@ fn global_json_help_is_valid_json() {
     }
 }
 
+#[cfg(target_os = "linux")]
+#[test]
+fn unknown_backend_override_is_reported() {
+    let output = Command::new(env!("CARGO_BIN_EXE_nightlight"))
+        .args(["--json", "status"])
+        .env("NIGHTLIGHT_BACKEND", "bogus")
+        .output()
+        .unwrap();
+    assert_eq!(output.status.code(), Some(1));
+    let error: serde_json::Value = serde_json::from_slice(&output.stderr).unwrap();
+    let message = error["error"].as_str().unwrap();
+    assert!(message.contains("Unknown night light backend 'bogus'"), "{}", message);
+}
+
 #[test]
 fn invalid_temperature_input_returns_json_without_a_backend() {
     let output = Command::new(env!("CARGO_BIN_EXE_nightlight"))

@@ -27,6 +27,13 @@ impl NightLight {
         }
     }
 
+    /// Uses the named backend instead of detecting one.
+    pub fn with_backend(name: &str) -> Result<NightLight, String> {
+        Ok(NightLight {
+            backend: os::backend_named(name)?,
+        })
+    }
+
     /// The backend in use, e.g. "macos" or "gnome".
     pub fn backend_name(&self) -> &'static str {
         self.backend.name()
@@ -41,10 +48,7 @@ impl NightLight {
     }
 
     pub fn toggle(&self, status: Status) -> Result<(), String> {
-        match self.backend.set_status(status) {
-            Ok(_) => Ok(()),
-            Err(_) => Err(format!("Failed to turn Night Shift {}", status).to_string()),
-        }
+        self.backend.set_status(status)
     }
 
     pub fn set_schedule(&self, schedule: Schedule) -> Result<(), String> {
@@ -158,12 +162,12 @@ mod tests {
     }
 
     #[test]
-    fn toggle_failures_are_reported() {
+    fn toggle_failures_come_from_the_backend() {
         let (night_light, _) = night_light(FakeBackend {
             failure: Some("backend unavailable"),
             ..FakeBackend::new()
         });
-        assert_eq!(night_light.on(), Err("Failed to turn Night Shift on".to_string()));
+        assert_eq!(night_light.on(), Err("backend unavailable".to_string()));
     }
 
     #[test]
