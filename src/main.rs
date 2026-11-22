@@ -115,7 +115,8 @@ fn schedule_value(schedule: &Schedule) -> Value {
 
 fn status_text(status: &Status, schedule: &Schedule) -> String {
     let suffix = match (schedule, status) {
-        (Schedule::SunsetToSunrise, _) => " until sunrise".to_string(),
+        (Schedule::SunsetToSunrise, Status::On) => " until sunrise".to_string(),
+        (Schedule::SunsetToSunrise, Status::Off) => " until sunset".to_string(),
         (Schedule::Off, _) => String::new(),
         (Schedule::Custom(_, to), Status::On) => format!(" until {}", to),
         (Schedule::Custom(from, _), Status::Off) => format!(" until {}", from),
@@ -350,6 +351,19 @@ mod tests {
             output_value(&CommandOutput::Temperature(75), "nightlight"),
             json!({"temperature":75})
         );
+    }
+
+    #[test]
+    fn status_text_names_the_next_transition() {
+        let sunset = Schedule::SunsetToSunrise;
+        assert_eq!(status_text(&Status::On, &sunset), "on until sunrise");
+        assert_eq!(status_text(&Status::Off, &sunset), "off until sunset");
+        assert_eq!(status_text(&Status::Off, &Schedule::Off), "off");
+        let (from, to) = (Time::from_tuple((20, 0)).unwrap(), Time::from_tuple((6, 30)).unwrap());
+        let (on, off) = (format!("on until {}", to), format!("off until {}", from));
+        let custom = Schedule::Custom(from, to);
+        assert_eq!(status_text(&Status::On, &custom), on);
+        assert_eq!(status_text(&Status::Off, &custom), off);
     }
 
     #[test]
