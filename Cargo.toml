@@ -19,6 +19,3 @@ time = "0.2.27" # v0.3.41 is available
 [target.'cfg(target_os = "macos")'.dependencies]
 objc = "0.2.7"
 objc-foundation = "0.1.1"
-
-[target.'cfg(target_os = "linux")'.dependencies]
-gio = "0.8.1" # v0.20.9 is available

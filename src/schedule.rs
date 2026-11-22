@@ -24,6 +24,7 @@ impl fmt::Display for Schedule {
 pub(crate) type Times = ((u8, u8), (u8, u8));
 
 impl Schedule {
+    #[cfg_attr(not(target_os = "macos"), allow(dead_code))]
     pub(crate) fn from_mode<F>(mode: i32, read_times: F) -> Result<Schedule, String>
     where
         F: FnOnce() -> Result<Times, String>,
