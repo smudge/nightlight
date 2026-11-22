@@ -5,6 +5,11 @@ pub(crate) trait Backend {
     fn status(&self) -> Result<Status, String>;
     fn set_status(&self, status: Status) -> Result<(), String>;
     fn schedule(&self) -> Result<Schedule, String>;
+
+    fn has_schedule(&self) -> bool {
+        true
+    }
+
     fn set_schedule(&self, schedule: Schedule) -> Result<(), String>;
     fn strength(&self) -> Result<i32, String>;
     fn set_strength(&self, strength: i32) -> Result<(), String>;

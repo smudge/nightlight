@@ -4,6 +4,7 @@ use command::{Runner, System};
 
 mod command;
 mod gnome;
+mod hyprsunset;
 mod kelvin;
 mod locale;
 mod noctalia;
@@ -13,7 +14,7 @@ pub use self::locale::Locale;
 
 const OVERRIDE: &str = "NIGHTLIGHT_BACKEND";
 
-const BACKENDS: &[&str] = &["gnome", "noctalia"];
+const BACKENDS: &[&str] = &["gnome", "noctalia", "hyprsunset"];
 
 pub(crate) fn backend() -> Box<dyn Backend> {
     let session = Session {
@@ -37,6 +38,7 @@ fn build(name: &str) -> Box<dyn Backend> {
     match name {
         "gnome" => Box::new(gnome::Gnome::new()),
         "noctalia" => Box::new(noctalia::Noctalia::new()),
+        "hyprsunset" => Box::new(hyprsunset::Hyprsunset::new()),
         _ => unreachable!("unknown backend {}", name),
     }
 }
@@ -71,6 +73,10 @@ impl Session<'_> {
         // Noctalia can run on desktops that have their own night light (e.g. KDE).
         if noctalia::running(self.runner) {
             return Ok("noctalia");
+        }
+
+        if hyprsunset::running(self.var) {
+            return Ok("hyprsunset");
         }
 
         if self.desktops().is_empty() && gnome::installed(self.runner) {
@@ -179,6 +185,30 @@ mod tests {
         assert_eq!(select(&[], probe.clone()), Ok("noctalia"));
         assert_eq!(select(&[("XDG_CURRENT_DESKTOP", "GNOME")], probe), Ok("gnome"));
         assert!(select(&[("XDG_CURRENT_DESKTOP", "niri")], vec![]).is_err());
+    }
+
+    #[test]
+    fn listening_hyprsunset_is_detected_after_noctalia() {
+        let runtime = std::env::temp_dir().join(format!("nightlight-detect-{}", std::process::id()));
+        let socket = runtime.join("hypr/sig/.hyprsunset.sock");
+        std::fs::create_dir_all(socket.parent().unwrap()).unwrap();
+        let _ = std::fs::remove_file(&socket);
+        let runtime_dir = runtime.to_str().unwrap();
+        let vars = [
+            ("XDG_CURRENT_DESKTOP", "Hyprland"),
+            ("XDG_RUNTIME_DIR", runtime_dir),
+            ("HYPRLAND_INSTANCE_SIGNATURE", "sig"),
+        ];
+
+        assert!(select(&vars, vec![]).is_err());
+        let listener = std::os::unix::net::UnixListener::bind(&socket).unwrap();
+        assert_eq!(select(&vars, vec![]), Ok("hyprsunset"));
+        let noctalia = vec!["noctalia msg config-get nightlight.enabled"];
+        assert_eq!(select(&vars, noctalia), Ok("noctalia"));
+
+        drop(listener);
+        assert!(select(&vars, vec![]).is_err(), "stale sockets are ignored");
+        let _ = std::fs::remove_dir_all(&runtime);
     }
 
     #[test]
