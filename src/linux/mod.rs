@@ -1,5 +1,7 @@
 extern crate gio;
 
+use crate::backend::Backend;
+use crate::{Schedule, Status};
 use gio::SettingsExt;
 use crate::schedule::Times;
 use std::os::raw::c_int;
@@ -7,6 +9,52 @@ use std::os::raw::c_int;
 mod locale;
 
 pub use self::locale::Locale;
+
+pub(crate) fn backend() -> Box<dyn Backend> {
+    Box::new(Gnome {
+        client: Client::new(),
+    })
+}
+
+struct Gnome {
+    client: Client,
+}
+
+impl Backend for Gnome {
+    fn name(&self) -> &'static str {
+        "gnome"
+    }
+
+    fn status(&self) -> Result<Status, String> {
+        Ok(Status::from_bool(self.client.get_enabled()?))
+    }
+
+    fn set_status(&self, status: Status) -> Result<(), String> {
+        self.client.set_enabled(status.as_bool())
+    }
+
+    fn schedule(&self) -> Result<Schedule, String> {
+        Schedule::from_mode(self.client.get_mode()?, || self.client.get_schedule())
+    }
+
+    fn set_schedule(&self, schedule: Schedule) -> Result<(), String> {
+        match schedule {
+            Schedule::Off => self.client.set_schedule_mode(0, None),
+            Schedule::SunsetToSunrise => self.client.set_schedule_mode(1, None),
+            Schedule::Custom(from, to) => {
+                self.client.set_schedule_mode(2, Some((from.tuple(), to.tuple())))
+            }
+        }
+    }
+
+    fn strength(&self) -> Result<i32, String> {
+        self.client.get_strength()
+    }
+
+    fn set_strength(&self, strength: i32) -> Result<(), String> {
+        self.client.set_strength(strength as f32 / 100.0)
+    }
+}
 
 fn mode_settings(mode: i32) -> (bool, bool) {
     match mode {
