@@ -7,9 +7,15 @@ pub struct Time {
     inner: time::Time,
 }
 
+// Formats in the system's 12 or 24-hour style.
 impl fmt::Display for Time {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_string())
+        let text = if Locale::current().is_24_hr() {
+            self.inner.format("%-H:%M")
+        } else {
+            self.inner.format("%-I:%M%p")
+        };
+        write!(f, "{}", text)
     }
 }
 
@@ -46,13 +52,5 @@ impl Time {
 
     pub fn tuple(&self) -> (u8, u8) {
         (self.inner.hour(), self.inner.minute())
-    }
-
-    pub fn to_string(&self) -> String {
-        if Locale::current().is_24_hr() {
-            self.inner.format("%-H:%M")
-        } else {
-            self.inner.format("%-I:%M%p")
-        }
     }
 }

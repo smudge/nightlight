@@ -18,3 +18,6 @@ impl fmt::Display for Schedule {
         }
     }
 }
+
+/// A schedule's (from, to) times as (hour, minute) pairs.
+pub(crate) type Times = ((u8, u8), (u8, u8));

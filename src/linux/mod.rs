@@ -1,7 +1,8 @@
 extern crate gio;
 
 use gio::SettingsExt;
-use std::os::raw::{c_float, c_int};
+use crate::schedule::Times;
+use std::os::raw::c_int;
 
 mod locale;
 
@@ -77,7 +78,7 @@ fn set_schedule_on<S: ScheduleSettings>(
 fn update_schedule_on<S: ScheduleSettings>(
     settings: &S,
     mode: i32,
-    times: Option<((u8, u8), (u8, u8))>,
+    times: Option<Times>,
 ) -> Result<(), String> {
     settings.begin();
     let result = match times {
@@ -103,43 +104,30 @@ impl Client {
     }
 
     pub fn set_enabled(&self, enabled: bool) -> Result<(), String> {
-        match self.settings.set_boolean("night-light-enabled", enabled) {
-            Ok(_) => Ok(gio::Settings::sync()),
-            Err(_) => Err(format!("Failed to set enabled to {}", enabled).to_string()),
-        }
+        self.settings
+            .set_boolean("night-light-enabled", enabled)
+            .map_err(|_| format!("Failed to set enabled to {}", enabled))?;
+        gio::Settings::sync();
+        Ok(())
     }
 
     pub fn set_schedule_mode(
         &self,
         mode: c_int,
-        times: Option<((u8, u8), (u8, u8))>,
+        times: Option<Times>,
     ) -> Result<(), String> {
         update_schedule_on(&self.settings, mode, times)?;
         gio::Settings::sync();
         Ok(())
     }
 
-    pub fn set_mode(&self, mode: c_int) -> Result<(), String> {
-        set_mode_on(&self.settings, mode)?;
-        gio::Settings::sync();
-        Ok(())
-    }
-
-    pub fn set_schedule(&self, from: (u8, u8), to: (u8, u8)) -> Result<(), String> {
-        set_schedule_on(&self.settings, from, to)?;
-        gio::Settings::sync();
-        Ok(())
-    }
-
     pub fn set_strength(&self, ratio: f32) -> Result<(), String> {
         let kelvins = (1.0 - ratio) * (6000.0 - 3500.0) + 3500.0;
-        match self
-            .settings
+        self.settings
             .set_uint("night-light-temperature", kelvins as u32)
-        {
-            Ok(_) => Ok(gio::Settings::sync()),
-            Err(_) => Err("Unable to set temperature".to_string()),
-        }
+            .map_err(|_| "Unable to set temperature".to_string())?;
+        gio::Settings::sync();
+        Ok(())
     }
 
     pub fn get_strength(&self) -> Result<i32, String> {
@@ -156,7 +144,7 @@ impl Client {
         Ok(get_mode_from(&self.settings))
     }
 
-    pub fn get_schedule(&self) -> Result<((u8, u8), (u8, u8)), String> {
+    pub fn get_schedule(&self) -> Result<Times, String> {
         let from = self.settings.get_double("night-light-schedule-from");
         let to = self.settings.get_double("night-light-schedule-to");
         Ok((

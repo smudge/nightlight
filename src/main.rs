@@ -262,7 +262,7 @@ fn main() {
 }
 
 fn temp_userinput(input: String) -> i32 {
-    if let Some(temp) = input.parse().ok() {
+    if let Ok(temp) = input.parse() {
         temp
     } else {
         const KELVIN_LOWER: f64 = 3500.0;

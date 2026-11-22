@@ -18,6 +18,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y pkg-config libglib2.0-dev
@@ -25,3 +27,5 @@ jobs:
         run: cargo build --locked --all-targets
       - name: Test
         run: cargo test --locked --all-targets
+      - name: Clippy
+        run: cargo clippy --locked --all-targets -- -D warnings
