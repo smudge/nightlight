@@ -8,6 +8,7 @@ description = "A CLI for configuring 'Night Shift' on macOS (and night light on 
 repository = "https://github.com/smudge/nightlight"
 readme = "README.md"
 license = "MIT"
+exclude = [".cargo"]
 
 [features] # required to fix unexpected `cfg` condition value
 cargo-clippy = []
@@ -19,3 +20,6 @@ time = "0.2.27" # v0.3.41 is available
 [target.'cfg(target_os = "macos")'.dependencies]
 objc = "0.2.7"
 objc-foundation = "0.1.1"
+
+[workspace]
+members = ["xtask"]
