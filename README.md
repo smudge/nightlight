@@ -23,6 +23,21 @@ This `nightlight` CLI aims to enable such access via a few simple commands.
 brew install smudge/smudge/nightlight
 ```
 
+### via prebuilt binaries
+
+Download the archive for your platform from the
+[latest release](https://github.com/smudge/nightlight/releases/latest)
+(`aarch64-apple-darwin` for Apple Silicon Macs, `x86_64-apple-darwin` for Intel
+Macs, or `x86_64`/`aarch64-unknown-linux-musl` for Linux), extract it, and move
+the `nightlight` binary somewhere on your `PATH`, e.g.:
+
+```
+tar -xzf nightlight-v*.tar.gz
+sudo mv nightlight-v*/nightlight /usr/local/bin/
+```
+
+The Linux binaries are statically linked and run on any distribution.
+
 ### via Cargo
 
 [Set up Rust/Cargo](https://doc.rust-lang.org/book/ch01-01-installation.html)
