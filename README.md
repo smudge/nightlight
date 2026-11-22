@@ -167,7 +167,7 @@ fn main() {
 - [ ] Test coverage of schedule/time parsing.
 - [ ] Tests that use fake/stub ObjC library.
 - [ ] Support for "Automatically adjust brightness" feature.
-- [ ] Cross-platform support (e.g. Windows' "Night Light")
+- [ ] Windows support (see [sem-reg-rs](https://github.com/Enyium/sem-reg-rs) in the meantime)
 
 ## Contributing
 
