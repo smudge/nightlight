@@ -1,6 +1,7 @@
 use super::command::{Runner, System};
 use super::transaction::{self, Store};
 use crate::backend::Backend;
+use super::kelvin;
 use crate::{Schedule, Status, Time};
 
 const SCHEMA: &str = "org.gnome.settings-daemon.plugins.color";
@@ -9,9 +10,6 @@ const AUTOMATIC: &str = "night-light-schedule-automatic";
 const FROM: &str = "night-light-schedule-from";
 const TO: &str = "night-light-schedule-to";
 const TEMPERATURE: &str = "night-light-temperature";
-
-const KELVIN_WARMEST: f64 = 3500.0;
-const KELVIN_COOLEST: f64 = 6000.0;
 
 pub(crate) struct GSettings<R: Runner = System> {
     runner: R,
@@ -121,16 +119,12 @@ impl<S: Store> Backend for Gnome<S> {
     }
 
     fn strength(&self) -> Result<i32, String> {
-        let kelvins: f64 = self.read(TEMPERATURE)?;
-        let ratio = 1.0 - (kelvins - KELVIN_WARMEST) / (KELVIN_COOLEST - KELVIN_WARMEST);
-        Ok((ratio * 100.0) as i32)
+        Ok(kelvin::to_strength(self.read(TEMPERATURE)?))
     }
 
     fn set_strength(&self, strength: i32) -> Result<(), String> {
-        let ratio = strength as f64 / 100.0;
-        let kelvins = (1.0 - ratio) * (KELVIN_COOLEST - KELVIN_WARMEST) + KELVIN_WARMEST;
         self.settings
-            .write(TEMPERATURE, &(kelvins as u32).to_string())
+            .write(TEMPERATURE, &kelvin::from_strength(strength).to_string())
             .map_err(|_| "Unable to set temperature".to_string())
     }
 }
@@ -252,6 +246,12 @@ mod tests {
         assert_eq!(gnome.settings.get(TEMPERATURE).unwrap(), "3500");
         gnome.set_strength(0).unwrap();
         assert_eq!(gnome.settings.get(TEMPERATURE).unwrap(), "6000");
+    }
+
+    #[test]
+    fn gnome_default_temperature_clamps_to_warmest() {
+        let gnome = gnome(&[(TEMPERATURE, "uint32 2700")]);
+        assert_eq!(gnome.strength(), Ok(100));
     }
 
     struct FakeRunner {
