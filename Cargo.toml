@@ -1,6 +1,6 @@
 [package]
 name = "nightlight"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["smudge <nathan@ngriffith.com>"]
 edition = "2024"
 categories = ["command-line-utilities", "os::macos-apis"]
