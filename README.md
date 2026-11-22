@@ -230,6 +230,8 @@ fn main() {
 * Make sure the project builds (`cargo build`) and functionality still works as expected.
 * Submit a pull request.
 
+To release, merge the version bump, then run `cargo release` from an up-to-date `main` (or `cargo release --dry-run` to check first). It publishes to crates.io and pushes the tag that builds the GitHub release.
+
 ## Thanks To:
 
 * The team at Apple for introducing this feature in macOS Sierra

@@ -1,0 +1,2 @@
+[alias]
+release = "run --quiet --package xtask -- release"
