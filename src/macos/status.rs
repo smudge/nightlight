@@ -60,17 +60,17 @@ impl BlueLightStatus {
     }
 
     pub fn mode(&self) -> i32 {
-        self.inner.mode as i32
+        self.inner.mode
     }
 
-    pub fn from_time(&self) -> (u8, u8) {
+    pub fn start_time(&self) -> (u8, u8) {
         (
             self.inner.schedule.from_time.hour as u8,
             self.inner.schedule.from_time.minute as u8,
         )
     }
 
-    pub fn to_time(&self) -> (u8, u8) {
+    pub fn end_time(&self) -> (u8, u8) {
         (
             self.inner.schedule.to_time.hour as u8,
             self.inner.schedule.to_time.minute as u8,

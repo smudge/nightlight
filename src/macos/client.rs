@@ -1,4 +1,5 @@
 use crate::os::BlueLightStatus;
+use crate::schedule::Times;
 use objc::rc::StrongPtr;
 use objc::runtime::{Object, BOOL, YES};
 use objc::{class, msg_send, sel, sel_impl};
@@ -17,7 +18,8 @@ impl Client {
     }
 
     pub fn set_enabled(&self, enabled: bool) -> Result<(), String> {
-        let enabled = Box::new(enabled as BOOL);
+        // BOOL is i8 on x86_64 but bool on arm64.
+        let enabled = Box::new(BOOL::from(enabled));
         let result: BOOL = unsafe { msg_send![*self.inner, setEnabled: *enabled] };
         if result == YES {
             Ok(())
@@ -83,8 +85,8 @@ impl Client {
         Ok(self.status()?.mode())
     }
 
-    pub fn get_schedule(&self) -> Result<((u8, u8), (u8, u8)), String> {
-        Ok((self.status()?.from_time(), self.status()?.to_time()))
+    pub fn get_schedule(&self) -> Result<Times, String> {
+        Ok((self.status()?.start_time(), self.status()?.end_time()))
     }
 
     fn status(&self) -> Result<BlueLightStatus, String> {

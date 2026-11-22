@@ -11,6 +11,12 @@ pub struct NightLight {
     client: os::Client,
 }
 
+impl Default for NightLight {
+    fn default() -> NightLight {
+        NightLight::new()
+    }
+}
+
 impl NightLight {
     pub fn new() -> NightLight {
         NightLight {
@@ -73,7 +79,7 @@ impl NightLight {
     }
 
     pub fn set_temp(&self, temp: i32) -> Result<(), String> {
-        if temp < 0 || temp > 100 {
+        if !(0..=100).contains(&temp) {
             return Err("Color temperature must be a number from 0 to 100.".to_string());
         }
 
@@ -93,7 +99,7 @@ impl NightLight {
 
     fn schedule<F>(mode: i32, read_times: F) -> Result<Schedule, String>
     where
-        F: FnOnce() -> Result<((u8, u8), (u8, u8)), String>,
+        F: FnOnce() -> Result<schedule::Times, String>,
     {
         match mode {
             0 => Ok(Schedule::Off),

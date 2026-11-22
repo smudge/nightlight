@@ -1,8 +1,7 @@
 use std::sync::Arc;
 
-pub struct Locale {
-    is_24_hr: bool,
-}
+// Times are always shown in 24-hour format on Linux.
+pub struct Locale;
 
 impl Locale {
     pub fn initialize() -> Result<(), String> {
@@ -10,7 +9,7 @@ impl Locale {
     }
 
     pub fn current() -> Arc<Locale> {
-        Arc::new(Locale { is_24_hr: true })
+        Arc::new(Locale)
     }
 
     pub fn is_24_hr(&self) -> bool {
