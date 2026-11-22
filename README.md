@@ -1,6 +1,6 @@
 # nightlight
 
-> A CLI for configuring "Night Shift" on macOS 🌕🌖🌗🌘🌑
+> A CLI for configuring "Night Shift" on macOS (and night light on Linux) 🌕🌖🌗🌘🌑
 
 This crate also doubles as a Rust library. 🦀
 
@@ -32,9 +32,45 @@ and install from crates.io by running:
 cargo install nightlight
 ```
 
-## Usage
+The Linux build has no system library dependencies: it talks to whatever
+already manages night light in your session (see below) at runtime.
 
-First, make sure you are running macOS Sierra or newer.
+## Platform Support
+
+On **macOS**, make sure you are running macOS Sierra or newer.
+
+On **Linux**, Wayland has no standard night light interface, so `nightlight`
+drives the component that owns it in your session, detected in this order:
+
+| Backend | Detected when | Notes |
+|---|---|---|
+| `gnome` | `XDG_CURRENT_DESKTOP` includes `GNOME` or `Pantheon` (e.g. Ubuntu, elementary OS) | Uses `gsettings` |
+| `noctalia` | A [Noctalia](https://noctalia.dev) (v5+) shell is running, on any compositor | Uses `noctalia msg` |
+| `hyprsunset` | [hyprsunset](https://wiki.hypr.land/Hypr-Ecosystem/hyprsunset/) is listening (e.g. Hyprland/Omarchy) | Talks to its socket directly |
+| `kde` | `XDG_CURRENT_DESKTOP` includes `KDE` (Plasma 6) | Uses `kreadconfig6`/`kwriteconfig6` |
+
+Outside a graphical session (e.g. cron), `gnome` is used if its settings
+schema is installed. Set `NIGHTLIGHT_BACKEND` to one of the names above to
+skip detection.
+
+A few backend differences to be aware of:
+
+* On Linux, `on`/`off` enable or disable night light on its schedule (rather
+  than overriding the schedule until the next transition, as on macOS), and
+  `schedule stop` turns night light off.
+* **Noctalia** and **KDE** (Plasma 6.5+) share their day/night schedule with
+  automatic theme switching, so a custom schedule changes that as well.
+  Noctalia changes are saved to its GUI-managed `settings.toml`; your
+  hand-written config is never modified.
+* **hyprsunset** has no sunset/sunrise mode, and its time-based profiles live
+  in `hyprsunset.conf`, so `schedule` commands aren't supported yet (`status`
+  reports a `null` schedule). Reading the on/off state, and changing the
+  temperature (which is only allowed while it's on), require hyprsunset
+  0.4.0 or newer.
+* **KDE**'s "always on" mode has no schedule, so `status` reports a `null`
+  schedule in that mode.
+
+## Usage
 
 ### Command-Line Interface
 
@@ -167,6 +203,8 @@ fn main() {
 - [ ] Test coverage of schedule/time parsing.
 - [ ] Tests that use fake/stub ObjC library.
 - [ ] Support for "Automatically adjust brightness" feature.
+- [X] Linux support (GNOME, KDE Plasma, Noctalia, hyprsunset)
+- [ ] hyprsunset schedules
 - [ ] Windows support (see [sem-reg-rs](https://github.com/Enyium/sem-reg-rs) in the meantime)
 
 ## Contributing
